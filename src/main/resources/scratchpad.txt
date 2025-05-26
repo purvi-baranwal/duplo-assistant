@@ -1,0 +1,1821 @@
+-- Table: facilities
+CREATE TABLE facilities (
+    id uuid NOT NULL,
+    name text NOT NULL,
+    is_internal bool NOT NULL,
+    is_active bool NOT NULL,
+    region text NOT NULL,
+    workflows _text NOT NULL,
+    jobs _text NOT NULL,
+    languages _text NOT NULL,
+    contact_emails _text NOT NULL,
+    created_at timestamp,
+    PRIMARY KEY (id));
+
+-- Table: asset
+CREATE TABLE asset (
+    asset_id varchar(255) NOT NULL,
+    asset_type_id int4 NOT NULL,
+    active bool NOT NULL,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    owning_network_id int4,
+    PRIMARY KEY (asset_id),
+    FOREIGN KEY (asset_type_id) REFERENCES asset_type(asset_type_id),
+    FOREIGN KEY (owning_network_id) REFERENCES network(network_id));
+
+-- Table: asset_aud
+CREATE TABLE asset_aud (
+    asset_id varchar(255),
+    active bool,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    rev int4 NOT NULL,
+    revtype int2,
+    asset_type_id int4,
+    owning_network_id int4,
+    FOREIGN KEY (rev) REFERENCES revinfo(rev));
+
+-- Table: asset_metadata
+CREATE TABLE asset_metadata (
+    asset_id varchar(255) NOT NULL,
+    asset_metadata_type_id int4 NOT NULL,
+    value varchar(300),
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    PRIMARY KEY (asset_id),
+    FOREIGN KEY (asset_id) REFERENCES asset(asset_id),
+    FOREIGN KEY (asset_metadata_type_id) REFERENCES asset_metadata_type(asset_metadata_type_id));
+
+-- Table: asset_metadata_aud
+CREATE TABLE asset_metadata_aud (
+    asset_id varchar(255),
+    asset_metadata_type_id int4,
+    value varchar(300),
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    rev int4 NOT NULL,
+    revtype int2,
+    FOREIGN KEY (rev) REFERENCES revinfo(rev));
+
+-- Table: asset_metadata_type
+CREATE TABLE asset_metadata_type (
+    asset_metadata_type_id serial NOT NULL,
+    code varchar(40),
+    display_name varchar(255),
+    description varchar(500),
+    active bool NOT NULL,
+    sort_order int4,
+    PRIMARY KEY (asset_metadata_type_id));
+
+-- Table: asset_type
+CREATE TABLE asset_type (
+    asset_type_id int4 NOT NULL,
+    code varchar(40),
+    display_name varchar(255),
+    description varchar(500),
+    active bool,
+    sort_order int4,
+    PRIMARY KEY (asset_type_id));
+
+-- Table: assignee
+CREATE TABLE assignee (
+    assignee_id serial NOT NULL,
+    display_name varchar(250),
+    email varchar(250),
+    rally_id varchar(150),
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    is_active bool,
+    operational_region_id int4,
+    rally_email varchar(150),
+    PRIMARY KEY (assignee_id),
+    FOREIGN KEY (operational_region_id) REFERENCES operational_region(operational_region_id));
+
+-- Table: assignee_aud
+CREATE TABLE assignee_aud (
+    assignee_id int4,
+    display_name varchar(250),
+    email varchar(250),
+    rally_id varchar(128),
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    rev int4 NOT NULL,
+    revtype int2,
+    is_active bool,
+    operational_region_id int4,
+    rally_email varchar(150),
+    FOREIGN KEY (rev) REFERENCES revinfo(rev));
+
+-- Table: assignee_workflow_config
+CREATE TABLE assignee_workflow_config (
+    assignee_workflow_config_id serial NOT NULL,
+    assignee_id int4 NOT NULL,
+    workflow_type_id int4 NOT NULL,
+    active bool,
+    PRIMARY KEY (assignee_workflow_config_id),
+    FOREIGN KEY (assignee_id) REFERENCES assignee(assignee_id),
+    FOREIGN KEY (workflow_type_id) REFERENCES workflow_type(workflow_type_id));
+
+-- Table: bulk_import_processed_workorders
+CREATE TABLE bulk_import_processed_workorders (
+    processed_id int4 NOT NULL,
+    key varchar(500),
+    case_uuid uuid,
+    media_id varchar(100),
+    work_type varchar(255),
+    language varchar(255),
+    work_flow_type varchar(100),
+    distribution varchar(500),
+    status varchar(255),
+    validation_errrors varchar(1000),
+    uploaded_by varchar(255),
+    created_time timestamp,
+    work_order_id uuid,
+    work_order_updated_details varchar(1000),
+    PRIMARY KEY (processed_id));
+
+-- Table: bulk_update_processed_workorders
+CREATE TABLE bulk_update_processed_workorders (
+    processed_id int4 NOT NULL,
+    key varchar(15),
+    status varchar(15),
+    season_title varchar(255),
+    work_order_id uuid,
+    case_uuid uuid,
+    media_id varchar(100),
+    work_flow_type varchar(100),
+    validation_errrors varchar(1000),
+    created_time timestamp,
+    internal_work_order_id int4,
+    case_id varchar(300),
+    PRIMARY KEY (processed_id));
+
+-- Table: caption_ingest_aud
+CREATE TABLE caption_ingest_aud (
+    caption_ingest_aud_id serial NOT NULL,
+    unique_req_id varchar(500),
+    result varchar(1000),
+    uploaded_by varchar(255),
+    created_time timestamp,
+    PRIMARY KEY (caption_ingest_aud_id));
+
+-- Table: caption_ingest_files_aud
+CREATE TABLE caption_ingest_files_aud (
+    caption_ingest_files_aud_id serial NOT NULL,
+    caption_ingest_aud_id int4 NOT NULL,
+    paid_id varchar(500),
+    s3_url varchar(500),
+    workorder_id varchar(500),
+    asset_id varchar(500),
+    PRIMARY KEY (caption_ingest_files_aud_id),
+    FOREIGN KEY (caption_ingest_aud_id) REFERENCES caption_ingest_aud(caption_ingest_aud_id));
+
+-- Table: circumstance
+CREATE TABLE circumstance (
+    circumstance_id serial NOT NULL,
+    code varchar(40),
+    display_name varchar(255),
+    description varchar(500),
+    sort_order int4,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    PRIMARY KEY (circumstance_id));
+
+-- Table: circumstance_group
+CREATE TABLE circumstance_group (
+    circumstance_group_id serial NOT NULL,
+    code varchar(40),
+    display_name varchar(255),
+    description varchar(500),
+    sort_order int4,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    PRIMARY KEY (circumstance_group_id));
+
+-- Table: circumstance_group_def
+CREATE TABLE circumstance_group_def (
+    circumstance_group_def_id serial NOT NULL,
+    workflow_type_id int4 NOT NULL,
+    circumstance_group_id int4 NOT NULL,
+    circumstance_id int4 NOT NULL,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    active bool,
+    PRIMARY KEY (circumstance_group_def_id),
+    FOREIGN KEY (circumstance_id) REFERENCES circumstance(circumstance_id),
+    FOREIGN KEY (circumstance_group_id) REFERENCES circumstance_group(circumstance_group_id),
+    FOREIGN KEY (workflow_type_id) REFERENCES workflow_type(workflow_type_id));
+
+-- Table: circumstance_rule
+CREATE TABLE circumstance_rule (
+    circumstance_rule_id serial NOT NULL,
+    workflow_type_id int4 NOT NULL,
+    rule_id int4 NOT NULL,
+    rank int4,
+    circumstance_id int4 NOT NULL,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    name varchar(200),
+    active bool,
+    PRIMARY KEY (circumstance_rule_id),
+    FOREIGN KEY (circumstance_id) REFERENCES circumstance(circumstance_id),
+    FOREIGN KEY (rule_id) REFERENCES rule(rule_id),
+    FOREIGN KEY (workflow_type_id) REFERENCES workflow_type(workflow_type_id));
+
+-- Table: circumstance_rule_condition
+CREATE TABLE circumstance_rule_condition (
+    circumstance_rule_condition_id serial NOT NULL,
+    circumstance_rule_id int4 NOT NULL,
+    field varchar(255),
+    operator varchar(128),
+    value varchar(255),
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    active bool,
+    PRIMARY KEY (circumstance_rule_condition_id),
+    FOREIGN KEY (circumstance_rule_id) REFERENCES circumstance_rule(circumstance_rule_id));
+
+-- Table: circumstance_rule_parameters
+CREATE TABLE circumstance_rule_parameters (
+    circumstance_rule_parameters_id serial NOT NULL,
+    circumstance_rule_id int4 NOT NULL,
+    field varchar(255),
+    value varchar(255),
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    active bool NOT NULL,
+    PRIMARY KEY (circumstance_rule_parameters_id),
+    FOREIGN KEY (circumstance_rule_id) REFERENCES circumstance_rule(circumstance_rule_id));
+
+-- Table: clip_data
+CREATE TABLE clip_data (
+    clip_id uuid NOT NULL,
+    work_order_id uuid,
+    approved_status bool,
+    clip varchar(1000),
+    program_id uuid,
+    edit_id uuid,
+    cut_id uuid,
+    logical_inventory_registration bool,
+    tangible_inventory_registration bool,
+    PRIMARY KEY (clip_id));
+
+-- Table: completion_condition
+CREATE TABLE completion_condition (
+    completion_condition_id serial NOT NULL,
+    workflow_task_id int4 NOT NULL,
+    field varchar(255),
+    operator varchar(24),
+    value varchar(255),
+    PRIMARY KEY (completion_condition_id),
+    FOREIGN KEY (workflow_task_id) REFERENCES workflow_task(workflow_task_id));
+
+-- Table: contact
+CREATE TABLE contact (
+    contact_id serial NOT NULL,
+    name varchar(255),
+    email varchar(255),
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    PRIMARY KEY (contact_id));
+
+-- Table: contact_aud
+CREATE TABLE contact_aud (
+    contact_id int4,
+    name varchar(255),
+    email varchar(255),
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    rev int4 NOT NULL,
+    revtype int2,
+    FOREIGN KEY (rev) REFERENCES revinfo(rev));
+
+-- Table: currency
+CREATE TABLE currency (
+    currency_id serial NOT NULL,
+    code varchar(40),
+    display_name varchar(255),
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    active bool,
+    description varchar(255),
+    sort_order int4,
+    PRIMARY KEY (currency_id));
+
+-- Table: currency_aud
+CREATE TABLE currency_aud (
+    currency_id int4,
+    code varchar(40),
+    display_name varchar(255),
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    rev int4 NOT NULL,
+    revtype int2,
+    FOREIGN KEY (rev) REFERENCES revinfo(rev));
+
+-- Table: cut_type
+CREATE TABLE cut_type (
+    cut_type_id serial NOT NULL,
+    cut_type varchar(255),
+    cut_sub_type varchar(255),
+    PRIMARY KEY (cut_type_id));
+
+-- Table: databasechangelog
+CREATE TABLE databasechangelog (
+    id varchar(255) NOT NULL,
+    author varchar(255) NOT NULL,
+    filename varchar(255) NOT NULL,
+    dateexecuted timestamp NOT NULL,
+    orderexecuted int4 NOT NULL,
+    exectype varchar(10) NOT NULL,
+    md5sum varchar(35),
+    description varchar(255),
+    comments varchar(255),
+    tag varchar(255),
+    liquibase varchar(20),
+    contexts varchar(255),
+    labels varchar(255),
+    deployment_id varchar(10));
+
+-- Table: databasechangeloglock
+CREATE TABLE databasechangeloglock (
+    id int4 NOT NULL,
+    locked bool NOT NULL,
+    lockgranted timestamp,
+    lockedby varchar(255),
+    PRIMARY KEY (id));
+
+-- Table: default_config
+CREATE TABLE default_config (
+    default_config_id serial NOT NULL,
+    distribution_id int4,
+    workflow_type_id int4 NOT NULL,
+    job_type_id int4,
+    sub_edit_type_id int4,
+    facility_id int4,
+    assignee_id int4,
+    operational_group_id int4,
+    work_order_status_id int4,
+    language_id int4,
+    sort_order int4,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    active bool,
+    auto_create bool,
+    due_date_type varchar(20),
+    allowed_prefixes varchar(500),
+    network_id int4,
+    additional_service_id int4,
+    alternate_job_types varchar(255),
+    PRIMARY KEY (default_config_id),
+    FOREIGN KEY (assignee_id) REFERENCES assignee(assignee_id),
+    FOREIGN KEY (distribution_id) REFERENCES distribution(distribution_id),
+    FOREIGN KEY (facility_id) REFERENCES facility(facility_id),
+    FOREIGN KEY (job_type_id) REFERENCES job_type(job_type_id),
+    FOREIGN KEY (language_id) REFERENCES language(language_id),
+    FOREIGN KEY (network_id) REFERENCES network(network_id),
+    FOREIGN KEY (operational_group_id) REFERENCES operational_group(operational_group_id),
+    FOREIGN KEY (sub_edit_type_id) REFERENCES sub_edit_type(sub_edit_type_id),
+    FOREIGN KEY (additional_service_id) REFERENCES sub_type(sub_type_id),
+    FOREIGN KEY (work_order_status_id) REFERENCES work_order_status(work_order_status_id),
+    FOREIGN KEY (workflow_type_id) REFERENCES workflow_type(workflow_type_id));
+
+-- Table: default_config_aud
+CREATE TABLE default_config_aud (
+    default_config_id int4,
+    distribution_id int4,
+    workflow_type_id int4,
+    job_type_id int4,
+    sub_edit_type_id int4,
+    facility_id int4,
+    assignee_id int4,
+    operational_group_id int4,
+    work_order_status_id int4,
+    language_id int4,
+    active bool,
+    auto_create bool,
+    allowed_prefixes varchar(100),
+    due_date_type varchar(100),
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    rev int4 NOT NULL,
+    revtype int2,
+    network_id int4,
+    additional_service_id int4,
+    alternate_job_types varchar(255),
+    FOREIGN KEY (rev) REFERENCES revinfo(rev));
+
+-- Table: default_config_filter
+CREATE TABLE default_config_filter (
+    default_config_filter_id int4 NOT NULL,
+    default_config_id int4 NOT NULL,
+    default_config_filter_type_id int4 NOT NULL,
+    active bool,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    PRIMARY KEY (default_config_filter_id),
+    FOREIGN KEY (default_config_filter_type_id) REFERENCES default_config_filter_type(default_config_filter_type_id));
+
+-- Table: default_config_filter_type
+CREATE TABLE default_config_filter_type (
+    default_config_filter_type_id int4 NOT NULL,
+    code varchar(255),
+    value varchar(255),
+    active bool,
+    PRIMARY KEY (default_config_filter_type_id));
+
+-- Table: default_config_metadata
+CREATE TABLE default_config_metadata (
+    default_config_id int4 NOT NULL,
+    default_config_metadata_type_id int4 NOT NULL,
+    value varchar(300),
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    PRIMARY KEY (default_config_id),
+    FOREIGN KEY (default_config_id) REFERENCES default_config(default_config_id),
+    FOREIGN KEY (default_config_metadata_type_id) REFERENCES default_config_metadata_type(default_config_metadata_type_id));
+
+-- Table: default_config_metadata_aud
+CREATE TABLE default_config_metadata_aud (
+    default_config_id int4,
+    default_config_metadata_type_id int4,
+    value varchar(300),
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    rev int4 NOT NULL,
+    revtype int2,
+    prefixes varchar(2147483647),
+    FOREIGN KEY (rev) REFERENCES revinfo(rev));
+
+-- Table: default_config_metadata_type
+CREATE TABLE default_config_metadata_type (
+    default_config_metadata_type_id serial NOT NULL,
+    code varchar(40),
+    display_name varchar(255),
+    description varchar(500),
+    active bool,
+    sort_order int4,
+    PRIMARY KEY (default_config_metadata_type_id));
+
+-- Table: distribution
+CREATE TABLE distribution (
+    distribution_id serial NOT NULL,
+    code varchar(40),
+    display_name varchar(255),
+    distribution_type varchar(40),
+    distribution_status varchar(40),
+    operational_region_id int4,
+    sort_order int4,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    external_id varchar(100),
+    external_name varchar(255),
+    external_code varchar(40),
+    pss_name varchar(255),
+    pss_code varchar(40),
+    market_id varchar(255),
+    pss_market_name varchar(255),
+    market_display_name varchar(255),
+    do_not_display bool,
+    network_id int4,
+    PRIMARY KEY (distribution_id),
+    FOREIGN KEY (network_id) REFERENCES network(network_id),
+    FOREIGN KEY (operational_region_id) REFERENCES operational_region(operational_region_id));
+
+-- Table: distribution_aud
+CREATE TABLE distribution_aud (
+    distribution_id int4,
+    code varchar(40),
+    display_name varchar(255),
+    distribution_type varchar(40),
+    distribution_status varchar(40),
+    operational_group_id int4,
+    operational_region_id int4,
+    sort_order int4,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    rev int4 NOT NULL,
+    revtype int2,
+    external_id varchar(100),
+    pss_name varchar(255),
+    pss_code varchar(40),
+    market_display_name varchar(255),
+    market_id varchar(255),
+    pss_market_name varchar(255),
+    do_not_display bool,
+    network_id int4,
+    FOREIGN KEY (rev) REFERENCES revinfo(rev));
+
+-- Table: distribution_refine_defaults
+CREATE TABLE distribution_refine_defaults (
+    distribution_refine_defaults_id serial NOT NULL,
+    distribution_id int4 NOT NULL,
+    workflow_id int4 NOT NULL,
+    PRIMARY KEY (distribution_refine_defaults_id),
+    FOREIGN KEY (distribution_id) REFERENCES distribution(distribution_id),
+    FOREIGN KEY (workflow_id) REFERENCES workflow(workflow_id));
+
+-- Table: facility
+CREATE TABLE facility (
+    facility_id serial NOT NULL,
+    display_name varchar(255),
+    facility_location varchar(40),
+    billing_code varchar(255),
+    facility_status varchar(40),
+    currency_id int4,
+    contact_id int4,
+    sort_order int4,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    is_languaging bool,
+    is_video_edit bool,
+    facility_uuid uuid,
+    manual_update bool,
+    is_dim bool NOT NULL,
+    PRIMARY KEY (facility_id),
+    FOREIGN KEY (contact_id) REFERENCES contact(contact_id),
+    FOREIGN KEY (currency_id) REFERENCES currency(currency_id));
+
+-- Table: facility_aud
+CREATE TABLE facility_aud (
+    facility_id int4,
+    display_name varchar(255),
+    facility_location varchar(40),
+    billing_code varchar(255),
+    facility_status varchar(40),
+    currency_id int4,
+    operational_region_id int4,
+    contact_id int4,
+    sort_order int4,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    rev int4 NOT NULL,
+    revtype int2,
+    is_languaging bool,
+    is_video_edit bool,
+    facility_uuid uuid,
+    manual_update bool,
+    is_dim bool NOT NULL,
+    FOREIGN KEY (rev) REFERENCES revinfo(rev));
+
+-- Table: facility_capability
+CREATE TABLE facility_capability (
+    facility_capability_id serial NOT NULL,
+    facility_id int4 NOT NULL,
+    language_id int4 NOT NULL,
+    job_type_id int4 NOT NULL,
+    performance_index float8,
+    capacity float8,
+    FOREIGN KEY (facility_id) REFERENCES facility(facility_id),
+    FOREIGN KEY (job_type_id) REFERENCES job_type(job_type_id),
+    FOREIGN KEY (language_id) REFERENCES language(language_id));
+
+-- Table: facility_contact
+CREATE TABLE facility_contact (
+    facility_id int4 NOT NULL,
+    contact_id int4 NOT NULL,
+    PRIMARY KEY (facility_id),
+    FOREIGN KEY (contact_id) REFERENCES contact(contact_id),
+    FOREIGN KEY (facility_id) REFERENCES facility(facility_id));
+
+-- Table: facility_language
+CREATE TABLE facility_language (
+    facility_id int4 NOT NULL,
+    language_id int4 NOT NULL,
+    PRIMARY KEY (facility_id),
+    FOREIGN KEY (facility_id) REFERENCES facility(facility_id),
+    FOREIGN KEY (language_id) REFERENCES language(language_id));
+
+-- Table: facility_language_aud
+CREATE TABLE facility_language_aud (
+    facility_id int4,
+    language_id int4,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    rev int4 NOT NULL,
+    revtype int2,
+    FOREIGN KEY (rev) REFERENCES revinfo(rev));
+
+-- Table: facility_operational_region
+CREATE TABLE facility_operational_region (
+    facility_id int4 NOT NULL,
+    operational_region_id int4 NOT NULL,
+    PRIMARY KEY (facility_id),
+    FOREIGN KEY (facility_id) REFERENCES facility(facility_id),
+    FOREIGN KEY (operational_region_id) REFERENCES operational_region(operational_region_id));
+
+-- Table: facility_operational_region_aud
+CREATE TABLE facility_operational_region_aud (
+    facility_id int4,
+    operationalr_egion_id int4,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    rev int4 NOT NULL,
+    revtype int2,
+    FOREIGN KEY (rev) REFERENCES revinfo(rev));
+
+-- Table: inventory_lang_xre
+CREATE TABLE inventory_lang_xre (
+    language_id int4 NOT NULL,
+    mdd_language varchar(100),
+    component varchar(200),
+    FOREIGN KEY (language_id) REFERENCES language(language_id));
+
+-- Table: job_sub_edit_type
+CREATE TABLE job_sub_edit_type (
+    job_sub_edit_type_id serial NOT NULL,
+    job_type_id int4 NOT NULL,
+    sub_edit_type_id int4 NOT NULL,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    PRIMARY KEY (job_sub_edit_type_id),
+    FOREIGN KEY (job_type_id) REFERENCES job_type(job_type_id),
+    FOREIGN KEY (sub_edit_type_id) REFERENCES sub_edit_type(sub_edit_type_id));
+
+-- Table: job_type
+CREATE TABLE job_type (
+    job_type_id serial NOT NULL,
+    code varchar(50) NOT NULL,
+    display_name varchar(255),
+    description varchar(500),
+    active bool NOT NULL,
+    sort_order int4,
+    rally_job_type varchar(255),
+    PRIMARY KEY (job_type_id));
+
+-- Table: job_type_sub_type
+CREATE TABLE job_type_sub_type (
+    job_type_id int4 NOT NULL,
+    sub_type_id int4 NOT NULL,
+    active bool,
+    operational_region_code varchar(255) NOT NULL,
+    PRIMARY KEY (job_type_id),
+    FOREIGN KEY (job_type_id) REFERENCES job_type(job_type_id),
+    FOREIGN KEY (sub_type_id) REFERENCES sub_type(sub_type_id));
+
+-- Table: language
+CREATE TABLE language (
+    language_id serial NOT NULL,
+    code varchar(40),
+    display_name varchar(255),
+    description varchar(500),
+    active bool,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    legacy_lang_code varchar(40),
+    is_written varchar(255),
+    is_spoken varchar(255),
+    PRIMARY KEY (language_id));
+
+-- Table: manifestation_processing_log
+CREATE TABLE manifestation_processing_log (
+    id bigserial NOT NULL,
+    timestamp timestamp,
+    manifestation_type varchar(255),
+    edit_id varchar(255),
+    alternate_id varchar(255),
+    primary_cut_edit_id varchar(255),
+    status varchar(50),
+    error_code varchar(100),
+    error_message varchar(1000),
+    raw_manifestation text,
+    PRIMARY KEY (id));
+
+-- Table: ml_model
+CREATE TABLE ml_model (
+    model_id int4 NOT NULL,
+    code varchar(100),
+    name varchar(100),
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    active bool,
+    PRIMARY KEY (model_id));
+
+-- Table: network
+CREATE TABLE network (
+    network_id serial NOT NULL,
+    code varchar(40),
+    display_name varchar(255),
+    operational_region_id int4 NOT NULL,
+    delivery_location_id int4 NOT NULL,
+    active bool,
+    sort_order int4,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    description varchar(500),
+    pss_network_id int4,
+    PRIMARY KEY (network_id),
+    FOREIGN KEY (operational_region_id) REFERENCES operational_region(operational_region_id),
+    FOREIGN KEY (delivery_location_id) REFERENCES sub_type(sub_type_id));
+
+-- Table: next_id
+CREATE TABLE next_id (
+    max int4);
+
+-- Table: note_category
+CREATE TABLE note_category (
+    note_category_id serial NOT NULL,
+    code varchar(40),
+    display_name varchar(255),
+    description varchar(500),
+    active bool NOT NULL,
+    sort_order int4,
+    PRIMARY KEY (note_category_id));
+
+-- Table: notification_subscription
+CREATE TABLE notification_subscription (
+    notification_subscription_id serial NOT NULL,
+    workflow_id int4 NOT NULL,
+    code varchar(40),
+    display_name varchar(255),
+    description varchar(500),
+    all_fields bool,
+    active bool,
+    sort_order int4,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    PRIMARY KEY (notification_subscription_id),
+    FOREIGN KEY (workflow_id) REFERENCES workflow(workflow_id));
+
+-- Table: notification_subscription_aud
+CREATE TABLE notification_subscription_aud (
+    notification_subscription_id int4,
+    workflow_id int4,
+    code varchar(40),
+    display_name varchar(255),
+    description varchar(500),
+    all_fields bool,
+    active bool,
+    sort_order int4,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    rev int4 NOT NULL,
+    revtype int2,
+    FOREIGN KEY (rev) REFERENCES revinfo(rev));
+
+-- Table: notification_subscription_field
+CREATE TABLE notification_subscription_field (
+    notification_subscription_id int4 NOT NULL,
+    field varchar(255),
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    FOREIGN KEY (notification_subscription_id) REFERENCES notification_subscription(notification_subscription_id));
+
+-- Table: notification_subscription_field_aud
+CREATE TABLE notification_subscription_field_aud (
+    notification_subscription_id int4,
+    field varchar(255),
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    rev int4 NOT NULL,
+    revtype int2,
+    FOREIGN KEY (rev) REFERENCES revinfo(rev));
+
+-- Table: notification_subscription_recip
+CREATE TABLE notification_subscription_recip (
+    notification_subscription_id int4 NOT NULL,
+    assignee_id int4,
+    grouping_id int4,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    FOREIGN KEY (assignee_id) REFERENCES assignee(assignee_id),
+    FOREIGN KEY (notification_subscription_id) REFERENCES notification_subscription(notification_subscription_id));
+
+-- Table: notification_subscription_recip_aud
+CREATE TABLE notification_subscription_recip_aud (
+    notification_subscription_id int4,
+    assignee_id int4,
+    grouping_id int4,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    rev int4 NOT NULL,
+    revtype int2,
+    FOREIGN KEY (rev) REFERENCES revinfo(rev));
+
+-- Table: operational_group
+CREATE TABLE operational_group (
+    operational_group_id serial NOT NULL,
+    code varchar(40),
+    display_name varchar(255),
+    description varchar(500),
+    active bool,
+    sort_order int4,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    operational_group_status varchar(40),
+    contact_id int4,
+    is_languaging bool,
+    is_video_edit bool,
+    operational_region_id int4,
+    is_dim bool NOT NULL,
+    PRIMARY KEY (operational_group_id),
+    FOREIGN KEY (contact_id) REFERENCES contact(contact_id));
+
+-- Table: operational_group_aud
+CREATE TABLE operational_group_aud (
+    operational_group_id int4,
+    code varchar(40),
+    display_name varchar(255),
+    description varchar(500),
+    active bool,
+    sort_order int4,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    rev int4 NOT NULL,
+    revtype int2,
+    operational_group_status varchar(40),
+    contact_id int4,
+    is_languaging bool,
+    is_video_edit bool,
+    operational_region_id int4,
+    is_dim bool NOT NULL,
+    FOREIGN KEY (rev) REFERENCES revinfo(rev));
+
+-- Table: operational_group_contact
+CREATE TABLE operational_group_contact (
+    operational_group_id int4 NOT NULL,
+    contact_id int4 NOT NULL,
+    PRIMARY KEY (operational_group_id),
+    FOREIGN KEY (contact_id) REFERENCES contact(contact_id),
+    FOREIGN KEY (operational_group_id) REFERENCES operational_group(operational_group_id));
+
+-- Table: operational_region
+CREATE TABLE operational_region (
+    operational_region_id serial NOT NULL,
+    code varchar(40),
+    display_name varchar(255),
+    description varchar(500),
+    active bool,
+    sort_order int4,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    notification_preference varchar(100),
+    PRIMARY KEY (operational_region_id));
+
+-- Table: operational_region_aud
+CREATE TABLE operational_region_aud (
+    operational_region_id int4,
+    code varchar(40),
+    display_name varchar(255),
+    description varchar(500),
+    active bool,
+    sort_order int4,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    rev int4 NOT NULL,
+    revtype int2,
+    FOREIGN KEY (rev) REFERENCES revinfo(rev));
+
+-- Table: operational_region_contact
+CREATE TABLE operational_region_contact (
+    operational_region_id int4 NOT NULL,
+    contact_id int4 NOT NULL,
+    PRIMARY KEY (operational_region_id),
+    FOREIGN KEY (contact_id) REFERENCES contact(contact_id),
+    FOREIGN KEY (operational_region_id) REFERENCES operational_region(operational_region_id));
+
+-- Table: permissions
+CREATE TABLE permissions (
+    permission_id serial NOT NULL,
+    workflow_type_id int4 NOT NULL,
+    role varchar(128),
+    business_function varchar(128),
+    has_access bool,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    PRIMARY KEY (permission_id),
+    FOREIGN KEY (workflow_type_id) REFERENCES workflow_type(workflow_type_id));
+
+-- Table: reference_material
+CREATE TABLE reference_material (
+    reference_material_id serial NOT NULL,
+    code varchar(40),
+    display_name varchar(255),
+    description varchar(500),
+    active bool,
+    PRIMARY KEY (reference_material_id));
+
+-- Table: reference_work_type
+CREATE TABLE reference_work_type (
+    reference_work_type_id serial NOT NULL,
+    work_type_name varchar(75),
+    job_type_id int4 NOT NULL,
+    job_type_code varchar(50),
+    component_type varchar(20),
+    id_change bool,
+    active bool,
+    PRIMARY KEY (reference_work_type_id),
+    FOREIGN KEY (job_type_id) REFERENCES job_type(job_type_id));
+
+-- Table: reference_work_type_reference_material
+CREATE TABLE reference_work_type_reference_material (
+    reference_work_type_id int4 NOT NULL,
+    reference_material_id int4 NOT NULL,
+    operational_region_id int4 NOT NULL,
+    type varchar(20) NOT NULL,
+    recut bool,
+    required bool,
+    PRIMARY KEY (reference_work_type_id),
+    FOREIGN KEY (reference_material_id) REFERENCES reference_material(reference_material_id),
+    FOREIGN KEY (operational_region_id) REFERENCES reference_material(reference_material_id),
+    FOREIGN KEY (reference_work_type_id) REFERENCES reference_work_type(reference_work_type_id));
+
+-- Table: revinfo
+CREATE TABLE revinfo (
+    rev serial NOT NULL,
+    revtstmp int8,
+    PRIMARY KEY (rev));
+
+-- Table: rule
+CREATE TABLE rule (
+    rule_id serial NOT NULL,
+    code varchar(100),
+    display_name varchar(255),
+    description text,
+    version int4,
+    rule_type varchar(40),
+    rule_value text,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    PRIMARY KEY (rule_id));
+
+-- Table: shedlock
+CREATE TABLE shedlock (
+    name varchar(64) NOT NULL,
+    lock_until timestamp,
+    locked_at timestamp,
+    locked_by varchar(100),
+    PRIMARY KEY (name));
+
+-- Table: skip_condition
+CREATE TABLE skip_condition (
+    skip_condition_id serial NOT NULL,
+    workflow_task_id int4 NOT NULL,
+    field varchar(255),
+    operator varchar(24),
+    value varchar(255),
+    PRIMARY KEY (skip_condition_id),
+    FOREIGN KEY (workflow_task_id) REFERENCES workflow_task(workflow_task_id));
+
+-- Table: source_task
+CREATE TABLE source_task (
+    source_task_id serial NOT NULL,
+    work_order_id uuid NOT NULL,
+    case_id varchar(300),
+    cut_id varchar(300),
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    qc_status varchar(255),
+    case_uuid varchar(255),
+    cut_type varchar(255),
+    instance_id varchar(300),
+    PRIMARY KEY (source_task_id),
+    FOREIGN KEY (work_order_id) REFERENCES work_order(work_order_id));
+
+-- Table: spring_session
+CREATE TABLE spring_session (
+    primary_id bpchar NOT NULL,
+    session_id bpchar NOT NULL,
+    creation_time int8 NOT NULL,
+    last_access_time int8 NOT NULL,
+    max_inactive_interval int4 NOT NULL,
+    expiry_time int8 NOT NULL,
+    principal_name varchar(100),
+    PRIMARY KEY (primary_id));
+
+-- Table: spring_session_attributes
+CREATE TABLE spring_session_attributes (
+    session_primary_id bpchar NOT NULL,
+    attribute_name varchar(200) NOT NULL,
+    attribute_bytes bytea NOT NULL,
+    PRIMARY KEY (session_primary_id),
+    FOREIGN KEY (session_primary_id) REFERENCES spring_session(primary_id));
+
+-- Table: standard_duration
+CREATE TABLE standard_duration (
+    standard_duration_id serial NOT NULL,
+    key varchar(200),
+    hours int4,
+    PRIMARY KEY (standard_duration_id));
+
+-- Table: sub_edit_type
+CREATE TABLE sub_edit_type (
+    sub_edit_type_id serial NOT NULL,
+    code varchar(200),
+    display_name varchar(300),
+    sort_order int4,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    PRIMARY KEY (sub_edit_type_id));
+
+-- Table: sub_type
+CREATE TABLE sub_type (
+    sub_type_id serial NOT NULL,
+    sub_type_category_id int4 NOT NULL,
+    code varchar(200),
+    display_name varchar(300),
+    description varchar(500),
+    active bool,
+    sort_order int4,
+    PRIMARY KEY (sub_type_id),
+    FOREIGN KEY (sub_type_category_id) REFERENCES sub_type_category(sub_type_category_id));
+
+-- Table: sub_type_category
+CREATE TABLE sub_type_category (
+    sub_type_category_id serial NOT NULL,
+    code varchar(200),
+    display_name varchar(300),
+    description varchar(500),
+    active bool,
+    sort_order int4,
+    PRIMARY KEY (sub_type_category_id));
+
+-- Table: subscription_condition
+CREATE TABLE subscription_condition (
+    subscription_condition_id serial NOT NULL,
+    workflow_subscription_id int4 NOT NULL,
+    field varchar(255),
+    operator varchar(128),
+    value varchar(255),
+    active bool,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    workflow_input_id int4,
+    workflow_id int4,
+    name varchar(50),
+    type varchar(50),
+    is_key_field bool,
+    default_value varchar(50),
+    workflow_task_id int4,
+    key_ordinal varchar(50),
+    json_path varchar(50),
+    PRIMARY KEY (subscription_condition_id),
+    FOREIGN KEY (workflow_subscription_id) REFERENCES workflow_subscription(workflow_subscription_id));
+
+-- Table: subscription_condition_aud
+CREATE TABLE subscription_condition_aud (
+    workflow_subscription_id int4,
+    field varchar(255),
+    operator varchar(128),
+    value varchar(255),
+    active bool,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    rev int4 NOT NULL,
+    revtype int2,
+    subscription_condition_id int4,
+    FOREIGN KEY (rev) REFERENCES revinfo(rev));
+
+-- Table: subscription_input
+CREATE TABLE subscription_input (
+    subscription_input_id serial NOT NULL,
+    workflow_input_id int4 NOT NULL,
+    workflow_subscription_id int4 NOT NULL,
+    field varchar(250),
+    value varchar(250),
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    active bool,
+    PRIMARY KEY (subscription_input_id),
+    FOREIGN KEY (workflow_input_id) REFERENCES workflow_input(workflow_input_id),
+    FOREIGN KEY (workflow_subscription_id) REFERENCES workflow_subscription(workflow_subscription_id));
+
+-- Table: subscription_input_aud
+CREATE TABLE subscription_input_aud (
+    workflow_input_id int4,
+    workflow_subscription_id int4,
+    field varchar(250),
+    value varchar(250),
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    rev int4 NOT NULL,
+    revtype int2,
+    FOREIGN KEY (rev) REFERENCES revinfo(rev));
+
+-- Table: subscription_router
+CREATE TABLE subscription_router (
+    subscription_router_id serial NOT NULL,
+    workflow_subscription_id int4 NOT NULL,
+    field varchar(255),
+    operator varchar(128),
+    value varchar(255),
+    active bool,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    routing_key varchar(200),
+    PRIMARY KEY (subscription_router_id),
+    FOREIGN KEY (workflow_subscription_id) REFERENCES workflow_subscription(workflow_subscription_id));
+
+-- Table: subscription_router_aud
+CREATE TABLE subscription_router_aud (
+    subscription_router_id int4,
+    workflow_subscription_id int4,
+    field varchar(255),
+    operator varchar(128),
+    value varchar(255),
+    active bool,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    rev int4 NOT NULL,
+    revtype int2,
+    routing_key varchar(200),
+    FOREIGN KEY (rev) REFERENCES revinfo(rev));
+
+-- Table: task
+CREATE TABLE task (
+    task_id serial NOT NULL,
+    task_type_id int4 NOT NULL,
+    code varchar(40),
+    display_name varchar(255),
+    description varchar(500),
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    PRIMARY KEY (task_id),
+    FOREIGN KEY (task_type_id) REFERENCES task_type(task_type_id));
+
+-- Table: task_aud
+CREATE TABLE task_aud (
+    task_id int4,
+    task_type_id int4,
+    code varchar(40),
+    display_name varchar(255),
+    description varchar(500),
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    rev int4 NOT NULL,
+    revtype int2,
+    FOREIGN KEY (rev) REFERENCES revinfo(rev));
+
+-- Table: task_exec
+CREATE TABLE task_exec (
+    task_exec_id serial NOT NULL,
+    work_order_id uuid NOT NULL,
+    workflow_task_id int4 NOT NULL,
+    task_status_id int4 NOT NULL,
+    assignee_id int4,
+    assigner varchar(128),
+    due_date timestamp,
+    priority int4 NOT NULL,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    schedule_change varchar(100),
+    is_assigned varchar(100),
+    complexity_tier varchar(100),
+    PRIMARY KEY (task_exec_id),
+    FOREIGN KEY (assignee_id) REFERENCES assignee(assignee_id),
+    FOREIGN KEY (task_status_id) REFERENCES task_status(task_status_id),
+    FOREIGN KEY (work_order_id) REFERENCES work_order(work_order_id),
+    FOREIGN KEY (workflow_task_id) REFERENCES workflow_task(workflow_task_id));
+
+-- Table: task_exec_aud
+CREATE TABLE task_exec_aud (
+    task_exec_id int4,
+    work_order_id uuid,
+    workflow_task_id int4,
+    task_status_id int4,
+    assignee_id int4,
+    assigner varchar(128),
+    due_date timestamp,
+    priority int4,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    rev int4 NOT NULL,
+    revtype int2,
+    FOREIGN KEY (rev) REFERENCES revinfo(rev));
+
+-- Table: task_exec_metadata
+CREATE TABLE task_exec_metadata (
+    task_exec_id int4 NOT NULL,
+    task_exec_metadata_type_id int4 NOT NULL,
+    value varchar(300),
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    PRIMARY KEY (task_exec_id),
+    FOREIGN KEY (task_exec_id) REFERENCES task_exec(task_exec_id),
+    FOREIGN KEY (task_exec_metadata_type_id) REFERENCES task_exec_metadata_type(task_exec_metadata_type_id));
+
+-- Table: task_exec_metadata_aud
+CREATE TABLE task_exec_metadata_aud (
+    task_exec_metadata_type_id int4,
+    value varchar(300),
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    rev int4 NOT NULL,
+    revtype int2,
+    task_exec_id int4,
+    FOREIGN KEY (rev) REFERENCES revinfo(rev));
+
+-- Table: task_exec_metadata_type
+CREATE TABLE task_exec_metadata_type (
+    task_exec_metadata_type_id serial NOT NULL,
+    code varchar(40),
+    display_name varchar(255),
+    description varchar(500),
+    active bool NOT NULL,
+    sort_order int4,
+    PRIMARY KEY (task_exec_metadata_type_id));
+
+-- Table: task_exec_note
+CREATE TABLE task_exec_note (
+    task_exec_note_id serial NOT NULL,
+    note_category_id int4,
+    task_exec_id int4 NOT NULL,
+    note text,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    active bool,
+    PRIMARY KEY (task_exec_note_id),
+    FOREIGN KEY (note_category_id) REFERENCES note_category(note_category_id),
+    FOREIGN KEY (task_exec_id) REFERENCES task_exec(task_exec_id));
+
+-- Table: task_exec_note_aud
+CREATE TABLE task_exec_note_aud (
+    task_exec_note_id int4,
+    note_category_id int4,
+    task_exec_id int4,
+    note text,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    rev int4 NOT NULL,
+    revtype int2,
+    active bool,
+    FOREIGN KEY (rev) REFERENCES revinfo(rev));
+
+-- Table: task_status
+CREATE TABLE task_status (
+    task_status_id serial NOT NULL,
+    code varchar(40),
+    display_name varchar(255),
+    description varchar(500),
+    active bool,
+    sort_order int4,
+    PRIMARY KEY (task_status_id));
+
+-- Table: task_status_workflow_type
+CREATE TABLE task_status_workflow_type (
+    task_status_workflow_type_id serial NOT NULL,
+    workflow_type_id int4 NOT NULL,
+    task_status_id int4 NOT NULL,
+    active bool,
+    PRIMARY KEY (task_status_workflow_type_id),
+    FOREIGN KEY (task_status_id) REFERENCES task_status(task_status_id),
+    FOREIGN KEY (workflow_type_id) REFERENCES workflow_type(workflow_type_id));
+
+-- Table: task_type
+CREATE TABLE task_type (
+    task_type_id serial NOT NULL,
+    code varchar(40),
+    display_name varchar(255),
+    description varchar(500),
+    active bool,
+    sort_order int4,
+    PRIMARY KEY (task_type_id));
+
+-- Table: version_prefix
+CREATE TABLE version_prefix (
+    version_prefix_id serial NOT NULL,
+    code varchar(10),
+    display_name varchar(10),
+    operational_region_id int4,
+    active bool,
+    sort_order int4,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    PRIMARY KEY (version_prefix_id),
+    FOREIGN KEY (operational_region_id) REFERENCES operational_region(operational_region_id));
+
+-- Table: work_order
+CREATE TABLE work_order (
+    work_order_id uuid NOT NULL,
+    asset_id varchar(255) NOT NULL,
+    workflow_id int4 NOT NULL,
+    work_order_status_id int4 NOT NULL,
+    due_date timestamp,
+    priority int4 NOT NULL,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    work_order_key varchar(512),
+    internal_work_order_id serial,
+    distribution_id int4,
+    operational_group_id int4,
+    assignee_id int4,
+    job_type_id int4,
+    facility_id int4,
+    operational_region_id int4,
+    language_id int4,
+    additional_service int4,
+    search_identifier_id int4,
+    search_identifier_value varchar(100),
+    prop_ep varchar(100),
+    scrid varchar(100),
+    show_code varchar(100),
+    distribution_date varchar(100),
+    property_id varchar(100),
+    file_delivery int4,
+    show_uuid varchar(100),
+    replacement_status varchar(100),
+    sub_edit_type int4,
+    corporate_premiere_date varchar(100),
+    region_long_name varchar(100),
+    assessment_results varchar(100),
+    rally_movie_name varchar(100),
+    network_short_name varchar(100),
+    schedule_change varchar(100),
+    is_assigned varchar(100),
+    cut_id varchar(100),
+    rally_movie_id varchar(100),
+    is_manual_due_date varchar(100),
+    received_date varchar(100),
+    cut_type varchar(100),
+    accurate_player_url varchar(100),
+    status_before_cancel varchar(100),
+    include_edit bool NOT NULL,
+    include_script bool NOT NULL,
+    PRIMARY KEY (work_order_id),
+    FOREIGN KEY (asset_id) REFERENCES asset(asset_id),
+    FOREIGN KEY (search_identifier_id) REFERENCES asset_metadata_type(asset_metadata_type_id),
+    FOREIGN KEY (assignee_id) REFERENCES assignee(assignee_id),
+    FOREIGN KEY (distribution_id) REFERENCES distribution(distribution_id),
+    FOREIGN KEY (facility_id) REFERENCES facility(facility_id),
+    FOREIGN KEY (job_type_id) REFERENCES job_type(job_type_id),
+    FOREIGN KEY (language_id) REFERENCES language(language_id),
+    FOREIGN KEY (operational_group_id) REFERENCES operational_group(operational_group_id),
+    FOREIGN KEY (operational_region_id) REFERENCES operational_region(operational_region_id),
+    FOREIGN KEY (sub_edit_type) REFERENCES sub_edit_type(sub_edit_type_id),
+    FOREIGN KEY (additional_service) REFERENCES sub_type(sub_type_id),
+    FOREIGN KEY (file_delivery) REFERENCES sub_type(sub_type_id),
+    FOREIGN KEY (work_order_status_id) REFERENCES work_order_status(work_order_status_id),
+    FOREIGN KEY (workflow_id) REFERENCES workflow(workflow_id));
+
+-- Table: work_order_aud
+CREATE TABLE work_order_aud (
+    work_order_id uuid,
+    asset_id varchar(255),
+    workflow_id int4,
+    work_order_status_id int4,
+    due_date timestamp,
+    priority int4,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    rev int4 NOT NULL,
+    revtype int2,
+    work_order_key varchar(512),
+    internal_work_order_id int4,
+    distribution_id int4,
+    operational_group_id int4,
+    job_type_id int4,
+    assignee_id int4,
+    facility_id int4,
+    operational_region_id int4,
+    FOREIGN KEY (rev) REFERENCES revinfo(rev));
+
+-- Table: work_order_metadata
+CREATE TABLE work_order_metadata (
+    work_order_id uuid NOT NULL,
+    work_order_metadata_type_id int4 NOT NULL,
+    value varchar(300),
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    PRIMARY KEY (work_order_id),
+    FOREIGN KEY (work_order_id) REFERENCES work_order(work_order_id),
+    FOREIGN KEY (work_order_metadata_type_id) REFERENCES work_order_metadata_type(work_order_metadata_type_id));
+
+-- Table: work_order_metadata_aud
+CREATE TABLE work_order_metadata_aud (
+    work_order_id uuid,
+    work_order_metadata_type_id int4,
+    value varchar(300),
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    rev int4 NOT NULL,
+    revtype int2,
+    FOREIGN KEY (rev) REFERENCES revinfo(rev));
+
+-- Table: work_order_metadata_type
+CREATE TABLE work_order_metadata_type (
+    work_order_metadata_type_id serial NOT NULL,
+    code varchar(40),
+    display_name varchar(255),
+    description varchar(500),
+    active bool NOT NULL,
+    sort_order int4,
+    PRIMARY KEY (work_order_metadata_type_id));
+
+-- Table: work_order_note
+CREATE TABLE work_order_note (
+    work_order_note_id serial NOT NULL,
+    note_category_id int4,
+    work_order_id uuid NOT NULL,
+    note text,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    active bool,
+    PRIMARY KEY (work_order_note_id),
+    FOREIGN KEY (note_category_id) REFERENCES note_category(note_category_id),
+    FOREIGN KEY (work_order_id) REFERENCES work_order(work_order_id));
+
+-- Table: work_order_note_aud
+CREATE TABLE work_order_note_aud (
+    work_order_note_id int4,
+    note_category_id int4,
+    work_order_id uuid,
+    note text,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    rev int4 NOT NULL,
+    revtype int2,
+    active bool,
+    FOREIGN KEY (rev) REFERENCES revinfo(rev));
+
+-- Table: work_order_status
+CREATE TABLE work_order_status (
+    work_order_status_id serial NOT NULL,
+    code varchar(40),
+    display_name varchar(255),
+    description varchar(500),
+    active bool,
+    sort_order int4,
+    PRIMARY KEY (work_order_status_id));
+
+-- Table: work_order_status_workflow_type
+CREATE TABLE work_order_status_workflow_type (
+    work_order_status_workflow_type_id serial NOT NULL,
+    workflow_type_id int4 NOT NULL,
+    work_order_status_id int4 NOT NULL,
+    active bool,
+    PRIMARY KEY (work_order_status_workflow_type_id),
+    FOREIGN KEY (work_order_status_id) REFERENCES work_order_status(work_order_status_id),
+    FOREIGN KEY (workflow_type_id) REFERENCES workflow_type(workflow_type_id));
+
+-- Table: workflow
+CREATE TABLE workflow (
+    workflow_id serial NOT NULL,
+    workflow_type_id int4 NOT NULL,
+    code varchar(40),
+    display_name varchar(255),
+    version int4,
+    description varchar(500),
+    active bool,
+    sort_order int4,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    PRIMARY KEY (workflow_id),
+    FOREIGN KEY (workflow_type_id) REFERENCES workflow_type(workflow_type_id));
+
+-- Table: workflow_aud
+CREATE TABLE workflow_aud (
+    workflow_id int4,
+    workflow_type_id int4,
+    code varchar(40),
+    display_name varchar(255),
+    version int4,
+    description varchar(500),
+    active bool,
+    sort_order int4,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    rev int4 NOT NULL,
+    revtype int2,
+    FOREIGN KEY (rev) REFERENCES revinfo(rev));
+
+-- Table: workflow_completion_status
+CREATE TABLE workflow_completion_status (
+    workflow_completion_status_id serial NOT NULL,
+    workflow_id int4 NOT NULL,
+    work_order_status_id int4 NOT NULL,
+    active bool,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    PRIMARY KEY (workflow_completion_status_id),
+    FOREIGN KEY (work_order_status_id) REFERENCES work_order_status(work_order_status_id),
+    FOREIGN KEY (workflow_id) REFERENCES workflow(workflow_id));
+
+-- Table: workflow_completion_status_aud
+CREATE TABLE workflow_completion_status_aud (
+    workflow_completion_status_id int4 NOT NULL,
+    rev int4 NOT NULL,
+    revtype int2,
+    created_by varchar(255),
+    created_time timestamp,
+    last_modified_by varchar(255),
+    last_modified_time timestamp,
+    workflow_id int4,
+    PRIMARY KEY (workflow_completion_status_id));
+
+-- Table: workflow_input
+CREATE TABLE workflow_input (
+    workflow_input_id serial NOT NULL,
+    workflow_id int4 NOT NULL,
+    name varchar(128),
+    type varchar(128),
+    is_key_field bool,
+    default_value varchar(128),
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    workflow_task_id int4,
+    key_ordinal int4,
+    json_path varchar(512),
+    PRIMARY KEY (workflow_input_id),
+    FOREIGN KEY (workflow_id) REFERENCES workflow(workflow_id),
+    FOREIGN KEY (workflow_task_id) REFERENCES workflow_task(workflow_task_id));
+
+-- Table: workflow_input_aud
+CREATE TABLE workflow_input_aud (
+    workflow_input_id int4,
+    workflow_id int4,
+    name varchar(128),
+    type varchar(128),
+    is_key_field bool,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    rev int4 NOT NULL,
+    revtype int2,
+    workflow_task_id int4,
+    default_value varchar(128),
+    key_ordinal int4,
+    json_path varchar(512),
+    FOREIGN KEY (rev) REFERENCES revinfo(rev));
+
+-- Table: workflow_job_types
+CREATE TABLE workflow_job_types (
+    workflow_id int4 NOT NULL,
+    job_type_id int4 NOT NULL,
+    PRIMARY KEY (workflow_id),
+    FOREIGN KEY (job_type_id) REFERENCES job_type(job_type_id),
+    FOREIGN KEY (workflow_id) REFERENCES workflow(workflow_id));
+
+-- Table: workflow_subscription
+CREATE TABLE workflow_subscription (
+    workflow_subscription_id serial NOT NULL,
+    workflow_id int4 NOT NULL,
+    name varchar(300),
+    action_type varchar(128),
+    active bool,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    subscription_condition_id int4,
+    field varchar(50),
+    operator varchar(50),
+    value varchar(50),
+    PRIMARY KEY (workflow_subscription_id),
+    FOREIGN KEY (workflow_id) REFERENCES workflow(workflow_id));
+
+-- Table: workflow_subscription_aud
+CREATE TABLE workflow_subscription_aud (
+    workflow_subscription_id int4,
+    workflow_id int4,
+    name varchar(128),
+    action_type varchar(128),
+    task_id int4,
+    active bool,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    rev int4 NOT NULL,
+    revtype int2,
+    FOREIGN KEY (rev) REFERENCES revinfo(rev));
+
+-- Table: workflow_task
+CREATE TABLE workflow_task (
+    workflow_task_id serial NOT NULL,
+    workflow_id int4 NOT NULL,
+    task_id int4 NOT NULL,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    name varchar(512),
+    sort_order int4,
+    PRIMARY KEY (workflow_task_id),
+    FOREIGN KEY (task_id) REFERENCES task(task_id),
+    FOREIGN KEY (workflow_id) REFERENCES workflow(workflow_id));
+
+-- Table: workflow_task_aud
+CREATE TABLE workflow_task_aud (
+    workflow_id int4,
+    task_id int4,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    rev int4 NOT NULL,
+    revtype int2,
+    name varchar(512),
+    workflow_task_id int4,
+    sort_order int4,
+    FOREIGN KEY (rev) REFERENCES revinfo(rev));
+
+-- Table: workflow_task_dependency
+CREATE TABLE workflow_task_dependency (
+    workflow_task_id int4 NOT NULL,
+    depends_on int4 NOT NULL,
+    FOREIGN KEY (workflow_task_id) REFERENCES workflow_task(workflow_task_id),
+    FOREIGN KEY (depends_on) REFERENCES workflow_task(workflow_task_id));
+
+-- Table: workflow_task_dependency_aud
+CREATE TABLE workflow_task_dependency_aud (
+    rev int4 NOT NULL,
+    workflow_task_id int4 NOT NULL,
+    depends_on int4 NOT NULL,
+    revtype int2,
+    PRIMARY KEY (rev));
+
+-- Table: workflow_type
+CREATE TABLE workflow_type (
+    workflow_type_id serial NOT NULL,
+    code varchar(40),
+    display_name varchar(255),
+    description varchar(500),
+    active bool,
+    sort_order int4,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    short_name varchar(100),
+    PRIMARY KEY (workflow_type_id));
+
+-- Table: workflow_type_aud
+CREATE TABLE workflow_type_aud (
+    workflow_type_id int4,
+    code varchar(40),
+    display_name varchar(255),
+    description varchar(500),
+    active bool,
+    sort_order int4,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    rev int4 NOT NULL,
+    revtype int2,
+    FOREIGN KEY (rev) REFERENCES revinfo(rev));
+
+-- Table: workflow_workorder_map
+CREATE TABLE workflow_workorder_map (
+    workflow_id uuid NOT NULL,
+    work_order_id uuid NOT NULL,
+    PRIMARY KEY (workflow_id),
+    FOREIGN KEY (work_order_id) REFERENCES work_order(work_order_id));
+
+-- Table: workorder_completion_prediction
+CREATE TABLE workorder_completion_prediction (
+    work_order_id uuid NOT NULL,
+    model_id int4 NOT NULL,
+    value date,
+    primary bool,
+    created_time timestamp,
+    created_by varchar(100),
+    last_modified_time timestamp,
+    last_modified_by varchar(100),
+    prediction_id serial NOT NULL,
+    PRIMARY KEY (prediction_id),
+    FOREIGN KEY (model_id) REFERENCES ml_model(model_id),
+    FOREIGN KEY (work_order_id) REFERENCES work_order(work_order_id));
+

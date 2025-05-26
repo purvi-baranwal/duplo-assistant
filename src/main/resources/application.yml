@@ -1,0 +1,42 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://db-duplo.dev.dcitech.cloud:5432/duplo
+    username: duplo_master
+    password: WNvy1JwF9cnlCk8g
+    hikari:
+      maximumPoolSize: 2
+      minimumIdle: 1
+      schema: public
+  jpa:
+    hibernate:
+      ddl-auto: none  # Don't let Spring Boot manage schema for existing DB
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: admin
+
+ollama:
+  base-url: "http://localhost:11434"
+  model-default: llama3.2
+  model-code: codellama
+  model-sql: sqlcoder
+  temperature: 0.2
+  max-token: 1000
+
+llm:
+  api:
+    base-url: http://localhost:11434/api/generate
+  model:
+    name: llama3  # Or mistral, codellama, etc.
+
+rag:
+  embedding:
+    model-name: sentence-transformers/all-MiniLM-L6-v2  # Example Hugging Face model
+  vector-store:
+    type: pgvector  # or chromadb, etc.
