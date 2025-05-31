@@ -1,9 +1,7 @@
-package chatbot.service;
+package assistant.service;
 
 import ai.djl.Application;
 import ai.djl.inference.Predictor;
-import ai.djl.modality.nlp.embedding.TextEmbedding;
-import ai.djl.ndarray.NDArray;
 import ai.djl.repository.zoo.Criteria;
 import ai.djl.repository.zoo.ZooModel;
 import ai.djl.translate.TranslateException;

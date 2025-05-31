@@ -1,4 +1,4 @@
-package chatbot.service;
+package assistant.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,6 +15,7 @@ import java.util.Map;
 public class RAGService {
 
     private final EmbeddingService embeddingService;
+    private final SchemaService schemaService;
     private final ObjectMapper objectMapper;
 
     // In a real application, this would be a vector database or a dedicated pgvector setup.
@@ -21,28 +23,23 @@ public class RAGService {
     private final List<Map<String, Object>> knowledgeBase = new ArrayList<>();
 
     @Autowired
-    public RAGService(EmbeddingService embeddingService, ObjectMapper objectMapper) {
+    public RAGService(EmbeddingService embeddingService, SchemaService schemaService, ObjectMapper objectMapper) {
         this.embeddingService = embeddingService;
+        this.schemaService = schemaService;
         this.objectMapper = objectMapper;
         // Populate a sample knowledge base
         initializeKnowledgeBase();
     }
 
     private void initializeKnowledgeBase() {
-        // Schema descriptions (can be dynamically loaded from SchemaService)
-        Map<String, Object> knowledgeBaseEntry = new java.util.HashMap<>();
-        knowledgeBaseEntry.put("text", "The work_order table stores details about work_order_status, due_date, created_by, tasks, assignee and priority.");
-        knowledgeBaseEntry.put("type", "schema_desc");
-        knowledgeBase.add(knowledgeBaseEntry);
-//        knowledgeBase.add(Map.of("text", "The work_orders table stores details about tasks or jobs, including title, description, assignee, status, and priority.", "type", "schema_desc"));
-//        knowledgeBase.add(Map.of("text", "The work_order_tasks table breaks down work orders into smaller steps, with task_name, status, and last_status_update.", "type", "schema_desc"));
-//        knowledgeBase.add(Map.of("text", "work_orders.assignee_id links to users.user_id.", "type", "relationship"));
-//        knowledgeBase.add(Map.of("text", "work_order_tasks.work_order_id links to work_orders.work_order_id.", "type", "relationship"));
-//
-//        // Example queries
-//        knowledgeBase.add(Map.of("text", "How many workorders are assigned to John?", "sql_example", "SELECT COUNT(*) FROM work_orders wo JOIN users u ON wo.assignee_id = u.user_id WHERE u.name = 'John';"));
-//        knowledgeBase.add(Map.of("text", "List tasks for workorder 'Fix Printer'.", "sql_example", "SELECT wot.task_name, wot.status FROM work_order_tasks wot JOIN work_orders wo ON wot.work_order_id = wo.work_order_id WHERE wo.title = 'Fix Printer';"));
-//        knowledgeBase.add(Map.of("text", "What is the status of task 'Install OS' for new hire laptop?", "sql_example", "SELECT wot.status FROM work_order_tasks wot JOIN work_orders wo ON wot.work_order_id = wo.work_order_id WHERE wo.title = 'Set up new hire laptop' AND wot.task_name = 'Install OS';"));
+        // Add custom knowledge entries
+//        knowledgeBase.add(new HashMap<>(Map.of("text", "The work_order table stores details about work_order_status, due_date, created_by, tasks, assignee and priority.")));
+//        knowledgeBase.add(new HashMap<>(Map.of("text", "For work_order_status use the work_order_status_id to get the status of a work order, use the display_name field for a human-readable status. work_order.work_order_status_id relates to work_order_status.work_order_status_id")));
+//        knowledgeBase.addAll(schemaService.getSchemaDescriptions());
+
+        // Load schema descriptions dynamically from SchemaService
+        List<Map<String, Object>> schemaDescriptions = schemaService.getSchemaDescriptions();
+        knowledgeBase.addAll(schemaDescriptions);
 
         // Pre-compute embeddings for the knowledge base
         for (Map<String, Object> entry : knowledgeBase) {

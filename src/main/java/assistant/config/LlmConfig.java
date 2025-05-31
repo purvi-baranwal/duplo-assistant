@@ -1,4 +1,4 @@
-package chatbot.config;
+package assistant.config;
 
 import dev.langchain4j.model.chat.ChatLanguageModel;
 import dev.langchain4j.model.ollama.OllamaChatModel;

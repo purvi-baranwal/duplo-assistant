@@ -1819,3 +1819,63 @@ CREATE TABLE workorder_completion_prediction (
     FOREIGN KEY (model_id) REFERENCES ml_model(model_id),
     FOREIGN KEY (work_order_id) REFERENCES work_order(work_order_id));
 
+
+You are a SQL query generator for a PostgreSQL database.
+Your task is to convert natural language questions into accurate SQL queries.
+
+Relationships reference:
+-- paid, ibms-media-id, scrid, property-id refers to asset_metadata_type.code which is work_order.search_identifier_id
+-- The work_order table stores details about work_order_status, due_date, created_by, tasks, assignee and priority
+-- work_order.work_order_status_id refers to work_order_status.work_order_status_id
+-- Use the display_name field for a human-readable status
+-- work_order.asset_id refers to asset.asset_id
+-- task_exec.work_order_id refers to work_order.work_order_id
+
+DATABASE SCHEMA:
+-- Table: work_order
+Columns: work_order_id, asset_id, workflow_id, work_order_status_id, due_date, priority, created_time, created_by, last_modified_time, last_modified_by, work_order_key, internal_work_order_id, distribution_id, operational_group_id, assignee_id, job_type_id, facility_id, operational_region_id, language_id, additional_service, search_identifier_id, search_identifier_value, prop_ep, scrid, show_code, distribution_date, property_id, file_delivery, show_uuid, replacement_status, sub_edit_type, corporate_premiere_date, region_long_name, assessment_results, rally_movie_name, network_short_name, schedule_change, is_assigned, cut_id, rally_movie_id, is_manual_due_date, received_date, cut_type, accurate_player_url, status_before_cancel, include_edit, include_script
+Primary key: work_order_id
+Foreign keys:
+  workflow_id -> workflow(workflow_id)
+  operational_group_id -> operational_group(operational_group_id)
+  asset_id -> asset(asset_id)
+  language_id -> language(language_id)
+  operational_region_id -> operational_region(operational_region_id)
+  job_type_id -> job_type(job_type_id)
+  sub_edit_type -> sub_edit_type(sub_edit_type_id)
+  additional_service -> sub_type(sub_type_id)
+  file_delivery -> sub_type(sub_type_id)
+  facility_id -> facility(facility_id)
+  work_order_status_id -> work_order_status(work_order_status_id)
+  distribution_id -> distribution(distribution_id)
+  search_identifier_id -> asset_metadata_type(asset_metadata_type_id)
+  assignee_id -> assignee(assignee_id)
+
+-- Table: work_order_status
+Columns: work_order_status_id, code, display_name, description, active, sort_order
+Primary key: work_order_status_id
+
+-- Table: work_order_status_workflow_type
+Columns: work_order_status_workflow_type_id, workflow_type_id, work_order_status_id, active
+Primary key: work_order_status_workflow_type_id
+Foreign keys:
+  workflow_type_id -> workflow_type(workflow_type_id)
+  work_order_status_id -> work_order_status(work_order_status_id)
+
+RAG CONTEXT:
+The work_order_status table has columns: work_order_status_id, code, display_name, description, active, sort_order. Primary key: work_order_status_id.
+The work_order_status_workflow_type table has columns: work_order_status_workflow_type_id, workflow_type_id, work_order_status_id, active. Primary key: work_order_status_workflow_type_id. Foreign keys: workflow_type_id references workflow_type(workflow_type_id); work_order_status_id references work_order_status(work_order_status_id);
+The task_exec table has columns: task_exec_id, work_order_id, workflow_task_id, task_status_id, assignee_id, assigner, due_date, priority, created_time, created_by, last_modified_time, last_modified_by, schedule_change, is_assigned, complexity_tier. Primary key: task_exec_id. Foreign keys: work_order_id references work_order(work_order_id); workflow_task_id references workflow_task(workflow_task_id); task_status_id references task_status(task_status_id); assignee_id references assignee(assignee_id);
+
+User Query: What is the work_order status of work_order_id 8c3c9620-7942-4e46-9a3d-b2aed621b389
+Generate SQL following these rules:
+1. Use EXACT table/column names from schema
+2. Use only the requested column(s) in SELECT
+3. Consider previous questions and answers
+4. For follow-ups, maintain consistency
+5. Include LIMIT 100 unless specified
+6. Generate a JSON response with:
+   {
+      "sql": "SELECT...", // only the executable SQL query"
+      "explanation": "..." // optional
+   }

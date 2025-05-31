@@ -1,8 +1,8 @@
-package chatbot.service;
+package assistant.service;
 
-import chatbot.model.ConversationHistory;
-import chatbot.model.ConversationTurn;
-import chatbot.repository.ConversationHistoryRepository;
+import assistant.model.ConversationHistory;
+import assistant.model.ConversationTurn;
+import assistant.repository.ConversationHistoryRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.langchain4j.model.chat.ChatLanguageModel;
 import lombok.extern.slf4j.Slf4j;
@@ -10,13 +10,15 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -80,9 +82,12 @@ public class QueryExecutionService {
                 .collect(Collectors.joining("\n"));
 
         //RAG: Retrieve context (schema, examples)
-        String databaseSchema = schemaService.getDatabaseSchemaAsPrompt(); // Dynamic schema
+//        String databaseSchema = schemaService.getDatabaseSchemaAsPrompt(); // Dynamic schema
         List<String> relevantRAGChunks = ragService.retrieveRelevantContext(userQuery, previousContext);
         String ragContext = String.join("\n", relevantRAGChunks);
+
+        // retrieve relevant schema for the RAG context
+        String databaseSchema = schemaService.getRelevantSchemaFromContext(ragContext);
 
         //Construct LLM Prompt
         String prompt = buildLlmPrompt(userQuery, databaseSchema, ragContext, previousContext);
@@ -92,12 +97,21 @@ public class QueryExecutionService {
         String generatedSql = chatModel.generate(prompt);
         log.info("LLM Response - generatedSql: {}", generatedSql);
 
+        //Extract JSON from LLM response
+        try {
+            generatedSql = extractCodeBlockFromResponse(generatedSql);
+            log.info("Extracted code from LLM response: {}", generatedSql);
+        } catch (IllegalArgumentException e) {
+            log.error("Error extracting code from LLM response: {}", e.getMessage());
+            return "Error: " + e.getMessage();
+        }
+
         //Execute SQL & Process Results
         String rawDbResultJson = executeSqlAndFormatResults(generatedSql);
         log.info("Raw DB Result: {}", rawDbResultJson);
 
         //Call LLM again to format results for output
-        String llmFormattedResponse = callLlmForFormatting(userQuery, generatedSql, rawDbResultJson);
+        String llmFormattedResponse = callLlmForFormatting(userQuery, databaseSchema, ragContext, previousContext, generatedSql, rawDbResultJson);
         log.info("LLM Formatted Response: {}", llmFormattedResponse);
 
         //save conversation history to mongo
@@ -120,28 +134,48 @@ public class QueryExecutionService {
     private String buildLlmPrompt(String userQuery, String schema, String ragContext, String previousContext) {
         // This prompt engineering is crucial. Be very specific.
         // You can add more examples here to improve accuracy.
+        // -- {table_name}_aud refers to audit table for {table_name}. Use this only for auditing changes in the {table_name} table.
+        String conversationHistorySection = (previousContext != null && !previousContext.isEmpty())
+                ? String.format("CONVERSATION HISTORY:\n%s\n", previousContext)
+                : "";
+
         return String.format(
                 """
                 You are a SQL query generator for a PostgreSQL database.
                 Your task is to convert natural language questions into accurate SQL queries.
-                
-                DATABASE SCHEMA:
-                -- Relationships:
+    
+                Relationships reference:
+                -- paid, ibms-media-id, scrid, property-id refers to asset_metadata_type.code which is work_order.search_identifier_id
+                -- The work_order table stores details about work_order_status, due_date, created_by, tasks, assignee and priority
+                -- work_order.work_order_status_id refers to work_order_status.work_order_status_id
+                -- Use the display_name field for a human-readable status
                 -- work_order.asset_id refers to asset.asset_id
                 -- task_exec.work_order_id refers to work_order.work_order_id
-
+    
+                DATABASE SCHEMA:
                 %s
-                
+    
                 RAG CONTEXT:
                 %s
-
-                CONVERSATION HISTORY:
+    
                 %s
-
                 User Query: %s
-                Generated SQL:
-                """
-                , schema, ragContext, previousContext, userQuery);
+                Generate SQL following these rules:
+                1. Use EXACT table/column names from schema
+                2. Use only the requested column(s) in SELECT
+                3. Use LEFT JOINs if necessary, to join with related tables to extract display_name
+                4. Don't select ids unless explicitly asked
+                5. Consider previous questions and answers
+                6. For follow-ups, maintain consistency
+                7. Include LIMIT 100 unless specified
+                8. Generate a JSON response with:
+                   {
+                      "sql": "SELECT...", // only the executable SQL query"
+                      "explanation": "..." // optional
+                   }
+                """,
+                schema, ragContext, conversationHistorySection, userQuery
+        );
     }
 
 //    private String callLlmForSqlGeneration(String prompt) {
@@ -187,7 +221,8 @@ public class QueryExecutionService {
         }
     }
 
-    private String callLlmForFormatting(String userQuery, String generatedSql, String rawDbResultJson) {
+    private String callLlmForFormatting(String userQuery, String databaseSchema, String ragContext,
+                                        String previousContext, String generatedSql, String rawDbResultJson) {
         // This prompt instructs the LLM to format the data for the user.
         String formattingPrompt = String.format(
                 """
@@ -198,11 +233,14 @@ public class QueryExecutionService {
                 %s
 
                 Please summarize and present the data clearly and concisely, directly answering the user's original question.
-                For work orders, include their title, status, and assigned user.
+                Extract only the requested details from the raw data.
+                Don't include any SQL code in the response.
+                Don't respond outside the scope of raw data provided.
+                For work order(s), include their search_identifier value, status and assignee display name.
                 For tasks, include task name, status, and calculate 'days not progressed' from 'last_status_update' to current date.
                 """,
+//                userQuery, generatedSql, rawDbResultJson, databaseSchema, ragContext, previousContext);
                 userQuery, generatedSql, rawDbResultJson);
-
 //        Map<String, Object> requestBody = Map.of(
 //                "model", llmModelName,
 //                "prompt", formattingPrompt,
@@ -224,5 +262,83 @@ public class QueryExecutionService {
         // This method can be enhanced to create a more useful summary for follow-up queries.
         // For example, if it's a list of work orders, just list their IDs or titles.
         return "Previous result: " + rawDbResultJson.substring(0, Math.min(rawDbResultJson.length(), 200)) + "...";
+    }
+
+    private String extractCodeBlockFromResponse(String llmResponse) {
+        String[] codeBlocks = llmResponse.split("```");
+        if (codeBlocks.length >= 2) {
+            String blockContent = codeBlocks[1].replaceFirst("(?i)json\\s*", "").trim();
+            // Find the first line or statement starting with SELECT
+            Pattern selectPattern = Pattern.compile("(?im)^\\s*SELECT[\\s\\S]*?;");
+            Matcher matcher = selectPattern.matcher(blockContent);
+            if (matcher.find()) {
+                return matcher.group().trim();
+            }
+            // If no semicolon, try to get the first SELECT statement anyway
+            selectPattern = Pattern.compile("(?im)^\\s*SELECT[\\s\\S]*", Pattern.MULTILINE);
+            matcher = selectPattern.matcher(blockContent);
+            if (matcher.find()) {
+                return matcher.group().trim();
+            }
+        }
+        // If no code block, try to extract JSON and get the "sql" field
+        Pattern jsonPattern = Pattern.compile("\\{(?:[^{}]|\\{[^{}]*\\})*\\}");
+        Matcher jsonMatcher = jsonPattern.matcher(llmResponse);
+        if (jsonMatcher.find()) {
+            String json = jsonMatcher.group();
+            try {
+                com.fasterxml.jackson.databind.JsonNode node = new com.fasterxml.jackson.databind.ObjectMapper().readTree(json);
+//                if (node.has("sql")) {
+//                    return node.get("sql").asText().trim();
+//                }
+                //case insensitive search for "sql" field
+                for (Iterator<String> it = node.fieldNames(); it.hasNext(); ) {
+                    String field = it.next();
+                    if (field.equalsIgnoreCase("sql")) {
+                        return node.get(field).asText().trim();
+                    }
+                }
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Found JSON but failed to parse: " + e.getMessage());
+            }
+        }
+        throw new IllegalArgumentException("No SQL query found in LLM response");
+    }
+
+//    private String extractJsonFromResponse(String llmResponse) {
+//        // Pattern to match JSON objects (including those with nested structures)
+//        Pattern jsonPattern = Pattern.compile("\\{(?:[^{}]|\\{(?:[^{}]|\\{[^{}]*\\})*\\})*\\}");
+//        Matcher matcher = jsonPattern.matcher(llmResponse);
+//
+//        if (matcher.find()) {
+//            String potentialJson = matcher.group(0);
+//
+//            // Validate it's properly formatted JSON
+//            if (isValidJson(potentialJson)) {
+//                return potentialJson;
+//            }
+//        }
+//
+//        // Try extracting from markdown code blocks
+//        String[] codeBlocks = llmResponse.split("```");
+//        if (codeBlocks.length >= 2) {
+//            for (int i = 1; i < codeBlocks.length; i += 2) {
+//                String blockContent = codeBlocks[i].replaceFirst("(?i)json\\s*", "").trim();
+//                if (isValidJson(blockContent)) {
+//                    return blockContent;
+//                }
+//            }
+//        }
+//
+//        throw new IllegalArgumentException("No valid JSON found in LLM response");
+//    }
+
+    private boolean isValidJson(String json) {
+        try {
+            new ObjectMapper().readTree(json);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

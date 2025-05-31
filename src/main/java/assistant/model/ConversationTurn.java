@@ -1,4 +1,4 @@
-package chatbot.model;
+package assistant.model;
 
 import lombok.Data;
 

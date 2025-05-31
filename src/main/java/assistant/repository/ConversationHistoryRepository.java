@@ -1,6 +1,6 @@
-package chatbot.repository;
+package assistant.repository;
 
-import chatbot.model.ConversationHistory;
+import assistant.model.ConversationHistory;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
