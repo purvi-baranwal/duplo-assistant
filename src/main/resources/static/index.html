@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Duplo Assistant</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    header {
+      background: #2d2d2d;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.2rem;
+    }
+
+    #chat {
+      flex-grow: 1;
+      padding: 1rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .message {
+      margin-bottom: 1rem;
+      white-space: pre-wrap;
+    }
+
+    .user {
+      background: #dcf8c6;
+      align-self: flex-end;
+      padding: 0.75rem;
+      border-radius: 10px;
+      max-width: 80%;
+      word-break: break-word;
+    }
+
+    .bot {
+      background: #ffffff;
+      align-self: flex-start;
+      padding: 0.75rem;
+      border-radius: 10px;
+      max-width: 80%;
+      border-left: 4px solid #2d2d2d;
+      word-break: break-word;
+    }
+
+    #input-area {
+      display: flex;
+      padding: 1rem;
+      background: #ffffff;
+    }
+
+    textarea {
+      flex-grow: 1;
+      resize: none;
+      font-size: 1rem;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-family: inherit;
+    }
+
+    button {
+      margin-left: 1rem;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      background: #2d2d2d;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.2s ease;
+    }
+
+    button:hover {
+      background: #444;
+    }
+  </style>
+</head>
+<body>
+
+  <header>Duplo Assistant</header>
+
+  <div id="chat"></div>
+
+  <div id="input-area">
+    <textarea id="prompt" rows="2" placeholder="Ask me anything..."></textarea>
+    <button onclick="sendPrompt()">Send</button>
+  </div>
+
+  <script>
+  const chat = document.getElementById("chat");
+  const promptInput = document.getElementById("prompt");
+
+  promptInput.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault(); // Prevent newline
+      sendPrompt();
+    }
+  });
+
+  async function sendPrompt() {
+    const prompt = promptInput.value.trim();
+    if (!prompt) return;
+
+    addMessage(prompt, "user");
+    promptInput.value = "";
+
+    const botMessage = addMessage("Thinking...", "bot");
+
+    try {
+      const response = await fetch("http://localhost:8080/assistant", {
+        method: "POST",
+        headers: { "Content-Type": "text/plain" },
+        body: prompt,
+      });
+
+      const text = await response.text();
+      botMessage.textContent = text || "No response.";
+    } catch (err) {
+      botMessage.textContent = "❌ Error: " + err.message;
+    }
+
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  function addMessage(text, type) {
+    const msg = document.createElement("div");
+    msg.className = `message ${type}`;
+    msg.textContent = text;
+    chat.appendChild(msg);
+    return msg;
+  }
+  </script>
+
+</body>
+</html>
