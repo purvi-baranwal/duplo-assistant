@@ -33,10 +33,10 @@ llm:
   api:
     base-url: http://localhost:11434/api/generate
   model:
-    name: llama3  # Or mistral, codellama, etc.
+    name: llama3
 
 rag:
   embedding:
-    model-name: sentence-transformers/all-MiniLM-L6-v2  # Example Hugging Face model
+    model-name: sentence-transformers/all-MiniLM-L6-v2
   vector-store:
     type: pgvector  # or chromadb, etc.
