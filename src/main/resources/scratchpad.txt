@@ -1879,3 +1879,8 @@ Generate SQL following these rules:
       "sql": "SELECT...", // only the executable SQL query"
       "explanation": "..." // optional
    }
+
+RAG CONTEXT:
+The work_order_status table has columns: work_order_status_id, code, display_name, description, active, sort_order. Primary key: work_order_status_id.
+The workflow_completion_status table has columns: workflow_completion_status_id, workflow_id, work_order_status_id, active, created_time, created_by, last_modified_time, last_modified_by. Primary key: workflow_completion_status_id. Foreign keys: workflow_id references workflow(workflow_id); work_order_status_id references work_order_status(work_order_status_id);
+The work_order_status_workflow_type table has columns: work_order_status_workflow_type_id, workflow_type_id, work_order_status_id, active. Primary key: work_order_status_workflow_type_id. Foreign keys: workflow_type_id references workflow_type(workflow_type_id); work_order_status_id references work_order_status(work_order_status_id);
