@@ -36,7 +36,7 @@
     }
 
     .user {
-      background: #dcf8c6;
+      background: #3c2dd4;
       align-self: flex-end;
       padding: 0.75rem;
       border-radius: 10px;
@@ -117,7 +117,8 @@
     addMessage(prompt, "user");
     promptInput.value = "";
 
-    const botMessage = addMessage("Thinking...", "bot");
+    const botMessage = addMessage("🤖 Duplo A is thinking...", "bot");
+    const botMessage2 = addMessage("🤖 Duplo B is thinking...", "bot");
 
     try {
       const response = await fetch("http://localhost:8080/assistant", {
@@ -130,6 +131,18 @@
       botMessage.textContent = text || "No response.";
     } catch (err) {
       botMessage.textContent = "❌ Error: " + err.message;
+    }
+    try {
+      const response = await fetch("http://localhost:5000/process", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ "text": prompt })
+      });
+
+      const text = await response.json();
+      botMessage2.textContent = text.result + "\n" + text.sources + "\n"  || "No response.";
+    } catch (err) {
+      botMessage2.textContent = "❌ Error: " + err.message;
     }
 
     chat.scrollTop = chat.scrollHeight;
