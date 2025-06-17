@@ -1,4 +1,3 @@
-import streamlit as st
 from langchain.vectorstores.chroma import Chroma
 from langchain.prompts import ChatPromptTemplate
 from langchain_community.llms.ollama import Ollama
@@ -6,8 +5,6 @@ from get_embedding_function import get_embedding_function
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-
-
 
 app = Flask(__name__)
 CORS(app)
@@ -42,26 +39,6 @@ def query_rag(query_text: str):
 
     sources = [doc.metadata.get("id", None) for doc, _score in results]
     return response_text, sources
-
-
-st.title("Interactive Chatbot")
-st.write(
-    "This Chatbot will answer your question based on the document availble locally"
-)
-
-query_text = st.text_input("Enter your query:", placeholder="Type your question here..")
-if st.button("Submit") and query_text:
-    with st.spinner("Generating responseee..."):
-        try:
-            response, sources = query_rag(query_text)
-            st.success("response generated")
-            st.write(f"**Response:**{response}")
-            st.write(
-                f"**Sources:**{', '.join(str(source) for source in sources if source)}"
-            )
-
-        except Exception as e:
-            st.error(f"An error occured : {e}")
 
 
 @app.route('/process', methods=['POST'])
