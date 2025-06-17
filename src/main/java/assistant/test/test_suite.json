@@ -122,11 +122,11 @@
     "id": 13,
     "query": "How many work orders are assigned to each assignee?",
     "expected_result": [
-      {"assignee": "Gayathri Kaliaperumal", "count": 1},
-      {"assignee": "Samkit Shah", "count": 12},
-      {"assignee": "Lisa Seeto", "count": 53}
+      {"assignee": "Bitan Biswas", "count": 51},
+      {"assignee": "Samkit Shah", "count": 93},
+      {"assignee": "Lisa Seeto", "count": 371}
     ],
-    "match_type": "minimum"
+    "match_type": "top_entity_and_threshold"
   },
   {
     "id": 14,
@@ -135,13 +135,15 @@
       "first_created_time": "2023-10-24 19:33:50.925",
       "last_created_time": "2024-03-27 08:01:05.718"
     },
-    "match_type": "dynamic"
+    "match_type": "exact"
   },
   {
     "id": 15,
-    "query": "Show the network display_name that has the fewest associated assets.",
-    "expected_result": "Animal Planet - Taiwan",
-    "match_type": "exact"
+    "query": "Show the all network display_name that has 1 associated assets.",
+    "expected_result":["Animal Planet - Taiwan","Science Channel - EMEA", "Discovery Kids - Latin",
+      "Discovery HD World - Japan", "truTV - US", "Boomerang - US", "HGTV - Asia Pacific", "Discovery+ Poland",
+      "Discovery Channel - Philippines", "Fine Living Digital", "Discovery Channel - Mexico", "Discovery Finland","Animal Planet - Taiwan"],
+    "match_type": "subset"
   },
   {
     "id": 16,
