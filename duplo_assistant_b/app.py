@@ -13,7 +13,7 @@ app = Flask(__name__)
 CORS(app)
 
 
-CHROMA_PATH = "/Users/adikumar/Desktop/da_uttam/db_chat"
+CHROMA_PATH = "/db_chat"
 
 PROMPT_TEMPLATE = """
 Answer the question based only on the following context:
