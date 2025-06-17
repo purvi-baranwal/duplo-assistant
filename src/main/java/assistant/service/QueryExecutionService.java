@@ -65,56 +65,54 @@ public class QueryExecutionService {
         return jdbcTemplate.queryForObject(sql, new Object[]{workOrderUUID}, String.class);
     }
 
+    // Java
     public String processNaturalLanguageQuery(String userQuery, String conversationId) {
-        //get conversation history
         ConversationHistory history = conversationHistoryRepository.findByConversationId(conversationId)
                 .orElseGet(() -> {
                     ConversationHistory newHistory = new ConversationHistory();
                     newHistory.setConversationId(conversationId);
                     newHistory.setCreatedAt(Instant.now());
-                    newHistory.setUserId("anonymous"); // Or fetch actual user ID
+                    newHistory.setUserId("anonymous");
                     return newHistory;
                 });
 
-        //get relevant previous context for follow-up queries
         String previousContext = history.getHistory().stream()
                 .map(turn -> "User: " + turn.getUserQuery() + "\nAI: " + turn.getLlmFormattedResponse())
                 .collect(Collectors.joining("\n"));
 
-        //RAG: Retrieve context (schema, examples)
-//        String databaseSchema = schemaService.getDatabaseSchemaAsPrompt(); // Dynamic schema
         List<String> relevantRAGChunks = ragService.retrieveRelevantContext(userQuery, previousContext);
         String ragContext = String.join("\n", relevantRAGChunks);
-
-        // retrieve relevant schema for the RAG context
         String databaseSchema = schemaService.getRelevantSchemaFromContext(ragContext);
 
-        //Construct LLM Prompt
         String prompt = buildLlmPrompt(userQuery, databaseSchema, ragContext, previousContext);
-        log.info("Prompt: {}", prompt);
+        String generatedSql = null;
+        String rawDbResultJson = null;
+        String errorMsg = null;
 
-        //Call LLM to generate SQL
-        String generatedSql = chatModel.generate(prompt);
-        log.info("LLM Response - generatedSql: {}", generatedSql);
-
-        //Extract JSON from LLM response
-        try {
-            generatedSql = extractCodeBlockFromResponse(generatedSql);
-            log.info("Extracted code from LLM response: {}", generatedSql);
-        } catch (IllegalArgumentException e) {
-            log.error("Error extracting code from LLM response: {}", e.getMessage());
-            return "Error: " + e.getMessage();
+        int maxHops = 3;
+        for (int hop = 1; hop <= maxHops; hop++) {
+            generatedSql = chatModel.generate(prompt);
+            try {
+                generatedSql = extractCodeBlockFromResponse(generatedSql);
+                rawDbResultJson = executeSqlAndFormatResults(generatedSql);
+                if (!rawDbResultJson.startsWith("Error")) {
+                    break; // Success
+                } else {
+                    errorMsg = rawDbResultJson;
+                }
+            } catch (Exception e) {
+                errorMsg = "Hop " + hop + " failed: " + e.getMessage();
+                rawDbResultJson = errorMsg;
+            }
+            // Add error context to prompt for next hop
+            prompt = buildLlmPrompt(
+                    userQuery + "\nPrevious attempt failed with error: " + errorMsg,
+                    databaseSchema, ragContext, previousContext
+            );
         }
 
-        //Execute SQL & Process Results
-        String rawDbResultJson = executeSqlAndFormatResults(generatedSql);
-        log.info("Raw DB Result: {}", rawDbResultJson);
-
-        //Call LLM again to format results for output
         String llmFormattedResponse = callLlmForFormatting(userQuery, databaseSchema, ragContext, previousContext, generatedSql, rawDbResultJson);
-        log.info("LLM Formatted Response: {}", llmFormattedResponse);
 
-        //save conversation history to mongo
         ConversationTurn currentTurn = new ConversationTurn();
         currentTurn.setTurn(history.getHistory().size() + 1);
         currentTurn.setUserQuery(userQuery);
@@ -122,7 +120,6 @@ public class QueryExecutionService {
         currentTurn.setRawDbResult(rawDbResultJson);
         currentTurn.setLlmFormattedResponse(llmFormattedResponse);
         currentTurn.setTimestamp(Instant.now());
-        // For follow-up queries, you might want to summarize the rawDbResult and store it in contextFromPreviousTurn
         currentTurn.setContextFromPreviousTurn(summarizeResultForContext(rawDbResultJson));
 
         history.getHistory().add(currentTurn);
