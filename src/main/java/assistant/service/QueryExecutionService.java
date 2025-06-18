@@ -32,6 +32,7 @@ public class QueryExecutionService {
     private final SchemaService schemaService;
     private final RAGService ragService;
     private final McpActionDispatcher mcpActionDispatcher;
+    private static final int MAX_SQL_RETRIES = 3;
 
     @Value("${llm.model.name}")
     private String llmModelName;
@@ -84,11 +85,10 @@ public class QueryExecutionService {
         log.info("LLM response: {}", llmResponse);
 
         String finalResult = null;
-        String lastAction = null;
-        Map<String, Object> lastParams = null;
 
         try {
-            while (true) {
+            int retryCount = 0;
+            while (retryCount < MAX_SQL_RETRIES) {
                 JsonNode node = objectMapper.readTree(llmResponse);
                 if (!node.has("action")) {
                     finalResult = llmResponse;
@@ -116,6 +116,23 @@ public class QueryExecutionService {
                 if (isTerminal && !hasError) {
                     finalResult = objectMapper.writeValueAsString(mcpResult);
                     break;
+                }
+
+                if (hasError && "execute_query".equals(action)) {
+                    retryCount++;
+                    if (retryCount >= MAX_SQL_RETRIES) {
+                        finalResult = "Error after retries: " + ((Map<?, ?>) mcpResult).get("error");
+                        break;
+                    }
+                    // Regenerate SQL with failure reason and retry
+                    String failureReason = ((Map<?, ?>) mcpResult).get("error").toString();
+                    String newSql = generateSql(userQuery, failureReason, databaseSchema, ragContext, previousContext, conversationId);
+                    params.put("sql", newSql);
+                    llmResponse = chatModel.generate(
+                            buildFollowupPrompt(userQuery, databaseSchema, ragContext, previousContext, conversationId, "generate_sql", Map.of("sql", newSql))
+                    );
+                    log.info("Retrying with regenerated SQL. Retry count: {}", retryCount);
+                    continue;
                 }
 
                 if (hasError) {
