@@ -79,7 +79,7 @@ public class QueryExecutionService {
         String databaseSchema = schemaService.getRelevantSchemaFromContext(ragContext);
 
         String prompt = buildLlmPrompt(userQuery, databaseSchema, ragContext, previousContext, conversationId);
-        log.info("Generated LLM prompt: {}", prompt);
+//        log.info("Generated LLM prompt: {}", prompt);
         String llmResponse = chatModel.generate(prompt);
         log.info("LLM response: {}", llmResponse);
 
@@ -110,25 +110,22 @@ public class QueryExecutionService {
                 history.getHistory().add(turn);
                 conversationHistoryRepository.save(history);
 
-                // Terminal actions: if action is execute_query or summarize_results, return result
-                if ("execute_query".equals(action) || "summarize_results".equals(action)) {
+                boolean isTerminal = ("execute_query".equals(action) || "summarize_results".equals(action));
+                boolean hasError = mcpResult instanceof Map && ((Map<?, ?>) mcpResult).containsKey("error");
+
+                if (isTerminal && !hasError) {
                     finalResult = objectMapper.writeValueAsString(mcpResult);
                     break;
                 }
 
-                // If action failed and LLM should retry (e.g., generate_sql after execute_query fails)
-                if (mcpResult instanceof Map && ((Map<?, ?>) mcpResult).containsKey("error")) {
+                if (hasError) {
                     params.put("failureReason", ((Map<?, ?>) mcpResult).get("error"));
                 }
 
-                // Prepare next LLM prompt with the result of the last action
-                String nextPrompt = buildFollowupPrompt(userQuery, databaseSchema, ragContext, previousContext, conversationId, action, mcpResult);
-                log.info("Followup LLM prompt: {}", nextPrompt);
-                llmResponse = chatModel.generate(nextPrompt);
+                llmResponse = chatModel.generate(
+                        buildFollowupPrompt(userQuery, databaseSchema, ragContext, previousContext, conversationId, action, mcpResult)
+                );
                 log.info("Followup LLM response: {}", llmResponse);
-
-                lastAction = action;
-                lastParams = params;
             }
         } catch (Exception e) {
             log.error("Error in LLM orchestration: {}", e.getMessage(), e);
@@ -146,24 +143,13 @@ public class QueryExecutionService {
                 """
                 You are an intelligent assistant for a PostgreSQL database with access to the following tools (MCP actions):
 
-                Available actions:
+                Available action:
                 - validate_user_request: Check if the user query is actionable.
-                - generate_sql: Generate a SQL statement for a valid user query.
-                - check_query: Check the generated SQL query for safety and correctness.
-                - execute_query: Execute a SQL query and return results.
-                - explain_query: Get the execution plan for a SQL query.
-                - summarize_results: Summarize a large result set.
-
+    
                 Instructions:
-                - Always start with validate_user_request.
-                - Respond only with one JSON object for action.
-                - If valid, use generate_sql to create SQL.
-                - Validate the generated SQL with check_query.
-                - Then use execute_query to run the SQL.
-                - If execute_query fails, use generate_sql again with the failure reason.
-                - If the result is too large, use explain_query and summarize_results.
-                - Do not wait for user confirmation.
-                - Always respond with a JSON object for actions, e.g.:
+                1. Always start with `validate_user_request` for the very first user query.
+                2. Do not use any other action at this step.
+                3. Respond only with a single JSON object for the action, e.g.:
                   {
                     "action": "validate_user_request",
                     "params": {
@@ -192,92 +178,92 @@ public class QueryExecutionService {
         String conversationHistorySection = (previousContext != null && !previousContext.isEmpty())
                 ? String.format("CONVERSATION HISTORY:\n%s\n", previousContext)
                 : "";
+        // Detect if last action was check_query and passed
+        boolean checkQueryPassed = "check_query".equals(lastAction)
+                && lastResult != null
+                && lastResult.toString().toLowerCase().contains("passed");
+        String forceExecuteQuery = checkQueryPassed
+                ? "\nIMPORTANT: The last action was `check_query` and it passed. The ONLY valid next action is `execute_query` with the SAME SQL. Do NOT use `generate_sql` or any other action. Any other action is a critical error.\n"
+                : "";
         return String.format(
                 """
-                You are an intelligent assistant for a PostgreSQL database with access to the following tools (MCP actions):
-    
-                Available actions:
-                - validate_user_request: Check if the user query is actionable.
-                - generate_sql: Generate a SQL statement for a valid user query.
-                - check_query: Check the generated SQL query for safety and correctness.
-                - execute_query: Execute a SQL query and return results.
-                - explain_query: Get the execution plan for a SQL query.
-                - summarize_results: Summarize a large result set.
-    
-                Instructions:
-                - Always start with validate_user_request.
-                - Respond only with one JSON object for action.
-                - If valid, use generate_sql to create SQL.
-                - Check the generated SQL with check_query.
-                - Then use execute_query to run the SQL.
-                - If execute_query fails, use generate_sql again with the failure reason.
-                - If the result is too large, use explain_query and summarize_results.
-                - Do not wait for user confirmation.
-                - Always respond with a JSON object for actions.
-                - Do not return SQL directly or outside JSON.
-                - When building params for generate_sql, always copy the entire DATABASE SCHEMA and RAG CONTEXT sections exactly as provided above into the corresponding fields.
-    
-                JSON examples for each action:
-                {
-                  "action": "validate_user_request",
-                  "params": {
-                    "userQuery": "<user query>"
-                  }
-                }
-                {
-                  "action": "generate_sql",
-                  "params": {
-                    "userQuery": "<user query>",
-                    "failureReason": "<error message or null>",
-                    "databaseSchema": "<schema>",
-                    "ragContext": "<rag context>",
-                    "previousContext": "<conversation history>",
-                    "conversationId": "<conversation id>"
-                  }
-                }
-                {
-                  "action": "check_query",
-                  "params": {
-                    "sql": "<sql statement>"
-                  }
-                }
-                {
-                  "action": "execute_query",
-                  "params": {
-                    "sql": "<sql statement>"
-                  }
-                }
-                {
-                  "action": "explain_query",
-                  "params": {
-                    "sql": "<sql statement>"
-                  }
-                }
-                {
-                  "action": "summarize_results",
-                  "params": {
-                    "results": "<result set>"
-                  }
-                }
-    
-                CONTEXT:
-                Last action: %s
-                Result: %s
-    
-                DATABASE SCHEMA:
-                %s
-    
-                RAG CONTEXT:
-                %s
-    
-                %s
-                User Query: %s
-    
-                conversationId: %s
-    
-                Based on the above, provide the next MCP action as a JSON object.
-                """,
-                lastAction, lastResult, schema, ragContext, conversationHistorySection, userQuery, conversationId
+                    You are an intelligent assistant for a PostgreSQL database with access to the following tools (MCP actions):
+        
+                    Available actions:
+                    - generate_sql: Generate a SQL statement for a valid user query.
+                    - check_query: Check the generated SQL query for safety and correctness.
+                    - execute_query: Execute a SQL query and return results.
+                    - explain_query: Get the execution plan for a SQL query.
+                    - summarize_results: Summarize a large result set.
+                    
+                    %s
+                    Instructions:
+                    1. If the last action was `check_query` and it passed, the ONLY valid next action is `execute_query` with the SAME SQL. Do NOT use `generate_sql` or any other action.
+                    2. Do not use `validate_user_request` again after the first step.
+                    3. If the request is valid, use `generate_sql` to create the SQL.
+                    4. After `generate_sql` returns a SQL (starting with SELECT), always use `check_query` next.
+                    5. If `execute_query` fails, use `generate_sql` again with the failure reason.
+                    6. If the result set is too large, use `explain_query` and then `summarize_results`.
+                    7. Do not repeat any action unless the previous step failed.
+                    8. Always respond with a single JSON object for the next action.
+                    9. Do not return SQL directly or outside JSON.
+                    10. Always copy the entire DATABASE SCHEMA and RAG CONTEXT sections exactly as provided above into the corresponding fields.
+        
+                    JSON examples for each action:
+                    {
+                      "action": "generate_sql",
+                      "params": {
+                        "userQuery": "<user query>",
+                        "failureReason": "<error message or null>",
+                        "databaseSchema": "<schema>",
+                        "ragContext": "<rag context>",
+                        "previousContext": "<conversation history>",
+                        "conversationId": "<conversation id>"
+                      }
+                    }
+                    {
+                      "action": "check_query",
+                      "params": {
+                        "sql": "<sql statement>"
+                      }
+                    }
+                    {
+                      "action": "execute_query",
+                      "params": {
+                        "sql": "<sql statement>"
+                      }
+                    }
+                    {
+                      "action": "explain_query",
+                      "params": {
+                        "sql": "<sql statement>"
+                      }
+                    }
+                    {
+                      "action": "summarize_results",
+                      "params": {
+                        "results": "<result set>"
+                      }
+                    }
+        
+                    CONTEXT:
+                    Last action: %s
+                    Result: %s
+        
+                    DATABASE SCHEMA:
+                    %s
+        
+                    RAG CONTEXT:
+                    %s
+        
+                    %s
+                    User Query: %s
+        
+                    conversationId: %s
+        
+                    Based on the above, provide the next MCP action as a JSON object.
+                    """,
+                forceExecuteQuery, lastAction, lastResult, schema, ragContext, conversationHistorySection, userQuery, conversationId
         );
     }
 
@@ -350,7 +336,7 @@ public class QueryExecutionService {
     // Validates if the user query is relevant and actionable
     public String validateUserRequest(String userQuery) {
         if (userQuery == null || userQuery.trim().isEmpty()) {
-            return "Invalid: Query is empty.";
+            return "Invalid: UserQuery is empty.";
         }
         // Add more advanced checks as needed (e.g., off-topic, chit-chat detection)
         return "Valid";
@@ -367,13 +353,13 @@ public class QueryExecutionService {
     public String validateQuery(String sql) {
         // Basic check for forbidden keywords, etc.
         if (sql == null || sql.trim().isEmpty()) {
-            return "Invalid: SQL is empty.";
+            return "Query Check Failed: SQL is empty.";
         }
         if (sql.toLowerCase().contains("drop") || sql.toLowerCase().contains("delete")) {
-            return "Invalid: Dangerous SQL detected.";
+            return "Query Check Failed: Dangerous SQL detected.";
         }
         // Add more validation as needed
-        return "Query is valid.";
+        return "Query Check Passed. Can be executed.";
     }
 
     // Executes the SQL and returns the result

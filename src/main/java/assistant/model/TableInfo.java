@@ -1,6 +1,7 @@
 package assistant.model;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,6 +17,7 @@ public class TableInfo {
     private Map<String, ForeignKeyReference> foreignKeys = new HashMap<>();
 
     @Data
+    @NoArgsConstructor
     public static class ForeignKeyReference {
         private String referencedTable;
         private String referencedColumn;
