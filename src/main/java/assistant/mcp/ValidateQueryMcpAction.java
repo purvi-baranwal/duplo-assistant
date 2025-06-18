@@ -1,9 +1,11 @@
 package assistant.mcp;
 
 import assistant.service.QueryExecutionService;
+import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
+@Component
 public class ValidateQueryMcpAction implements McpAction {
     private final QueryExecutionService queryService;
 
@@ -13,7 +15,7 @@ public class ValidateQueryMcpAction implements McpAction {
 
     @Override
     public String getName() {
-        return "validate_query";
+        return "check_query";
     }
 
     @Override

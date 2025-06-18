@@ -1,0 +1,390 @@
+[
+  {
+    "text": "The facilities table has columns: id, name, is_internal, is_active, region, workflows, jobs, languages, contact_emails, created_at. Primary key: id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The duplo_worker_registry table has columns: duplo_worker_registry_id, workflow_orchestration_schema_id, worker_type, worker_code, worker_queue, created_time, created_by, last_modified_time, last_modified_by. Primary key: duplo_worker_registry_id. Foreign keys: workflow_orchestration_schema_id references workflow_orchestration_schema(workflow_orchestration_schema_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The task_orchestration_schema table has columns: task_orchestration_schema_id, code, display_name, version, format, definition, description, created_time, created_by, last_modified_time, last_modified_by. Primary key: task_orchestration_schema_id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The workflow_orchestration_schema table has columns: workflow_orchestration_schema_id, code, display_name, version, format, definition, description, created_time, created_by, last_modified_time, last_modified_by. Primary key: workflow_orchestration_schema_id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The asset table has columns: asset_id, asset_type_id, active, created_time, created_by, last_modified_time, last_modified_by, owning_network_id. Primary key: asset_id. Foreign keys: asset_type_id references asset_type(asset_type_id); owning_network_id references network(network_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The asset_metadata table has columns: asset_id, asset_metadata_type_id, value, created_time, created_by, last_modified_time, last_modified_by. Primary key: asset_id, asset_metadata_type_id. Foreign keys: asset_metadata_type_id references asset_metadata_type(asset_metadata_type_id); asset_id references asset(asset_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The asset_metadata_type table has columns: asset_metadata_type_id, code, display_name, description, active, sort_order. Primary key: asset_metadata_type_id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The asset_type table has columns: asset_type_id, code, display_name, description, active, sort_order. Primary key: asset_type_id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The assignee table has columns: assignee_id, display_name, email, rally_id, created_time, created_by, last_modified_time, last_modified_by, is_active, operational_region_id, rally_email. Primary key: assignee_id. Foreign keys: operational_region_id references operational_region(operational_region_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The assignee_workflow_config table has columns: assignee_workflow_config_id, assignee_id, workflow_type_id, active. Primary key: assignee_workflow_config_id. Foreign keys: workflow_type_id references workflow_type(workflow_type_id); assignee_id references assignee(assignee_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The bulk_import_processed_workorders table has columns: processed_id, key, case_uuid, media_id, work_type, language, work_flow_type, distribution, status, validation_errrors, uploaded_by, created_time, work_order_id, work_order_updated_details. Primary key: processed_id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The bulk_update_processed_workorders table has columns: processed_id, key, status, season_title, work_order_id, case_uuid, media_id, work_flow_type, validation_errrors, created_time, internal_work_order_id, case_id. Primary key: processed_id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The circumstance table has columns: circumstance_id, code, display_name, description, sort_order, created_time, created_by, last_modified_time, last_modified_by. Primary key: circumstance_id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The circumstance_group table has columns: circumstance_group_id, code, display_name, description, sort_order, created_time, created_by, last_modified_time, last_modified_by. Primary key: circumstance_group_id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The circumstance_group_def table has columns: circumstance_group_def_id, workflow_type_id, circumstance_group_id, circumstance_id, created_time, created_by, last_modified_time, last_modified_by, active. Primary key: circumstance_group_def_id. Foreign keys: circumstance_group_id references circumstance_group(circumstance_group_id); circumstance_id references circumstance(circumstance_id); workflow_type_id references workflow_type(workflow_type_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The circumstance_rule table has columns: circumstance_rule_id, workflow_type_id, rule_id, rank, circumstance_id, created_time, created_by, last_modified_time, last_modified_by, name, active. Primary key: circumstance_rule_id. Foreign keys: rule_id references rule(rule_id); circumstance_id references circumstance(circumstance_id); workflow_type_id references workflow_type(workflow_type_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The circumstance_rule_condition table has columns: circumstance_rule_condition_id, circumstance_rule_id, field, operator, value, created_time, created_by, last_modified_time, last_modified_by, active. Primary key: circumstance_rule_condition_id. Foreign keys: circumstance_rule_id references circumstance_rule(circumstance_rule_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The circumstance_rule_parameters table has columns: circumstance_rule_parameters_id, circumstance_rule_id, field, value, created_time, created_by, last_modified_time, last_modified_by, active. Primary key: circumstance_rule_parameters_id. Foreign keys: circumstance_rule_id references circumstance_rule(circumstance_rule_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The clip_data table has columns: clip_id, work_order_id, approved_status, clip, program_id, edit_id, cut_id, logical_inventory_registration, tangible_inventory_registration. Primary key: clip_id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The completion_condition table has columns: completion_condition_id, workflow_task_id, field, operator, value. Primary key: completion_condition_id. Foreign keys: workflow_task_id references workflow_task(workflow_task_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The contact table has columns: contact_id, name, email, created_time, created_by, last_modified_time, last_modified_by. Primary key: contact_id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The currency table has columns: currency_id, code, display_name, created_time, created_by, last_modified_time, last_modified_by, active, description, sort_order. Primary key: currency_id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The cut_type table has columns: cut_type_id, cut_type, cut_sub_type. Primary key: cut_type_id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The databasechangelog table has columns: id, author, filename, dateexecuted, orderexecuted, exectype, md5sum, description, comments, tag, liquibase, contexts, labels, deployment_id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The databasechangeloglock table has columns: id, locked, lockgranted, lockedby. Primary key: id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The default_config table has columns: default_config_id, distribution_id, workflow_type_id, job_type_id, sub_edit_type_id, facility_id, assignee_id, operational_group_id, work_order_status_id, language_id, sort_order, created_time, created_by, last_modified_time, last_modified_by, active, auto_create, due_date_type, allowed_prefixes, network_id, additional_service_id, alternate_job_types. Primary key: default_config_id. Foreign keys: network_id references network(network_id); sub_edit_type_id references sub_edit_type(sub_edit_type_id); operational_group_id references operational_group(operational_group_id); facility_id references facility(facility_id); additional_service_id references sub_type(sub_type_id); workflow_type_id references workflow_type(workflow_type_id); language_id references language(language_id); work_order_status_id references work_order_status(work_order_status_id); distribution_id references distribution(distribution_id); job_type_id references job_type(job_type_id); assignee_id references assignee(assignee_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The default_config_filter table has columns: default_config_filter_id, default_config_id, default_config_filter_type_id, active, created_time, created_by, last_modified_time, last_modified_by. Primary key: default_config_filter_id. Foreign keys: default_config_filter_type_id references default_config_filter_type(default_config_filter_type_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The default_config_filter_type table has columns: default_config_filter_type_id, code, value, active. Primary key: default_config_filter_type_id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The default_config_metadata table has columns: default_config_id, default_config_metadata_type_id, value, created_time, created_by, last_modified_time, last_modified_by. Primary key: default_config_id, default_config_metadata_type_id. Foreign keys: default_config_metadata_type_id references default_config_metadata_type(default_config_metadata_type_id); default_config_id references default_config(default_config_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The default_config_metadata_type table has columns: default_config_metadata_type_id, code, display_name, description, active, sort_order. Primary key: default_config_metadata_type_id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The distribution table has columns: distribution_id, code, display_name, distribution_type, distribution_status, operational_region_id, sort_order, created_time, created_by, last_modified_time, last_modified_by, external_id, external_name, external_code, pss_name, pss_code, market_id, pss_market_name, market_display_name, do_not_display, network_id. Primary key: distribution_id. Foreign keys: network_id references network(network_id); operational_region_id references operational_region(operational_region_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The distribution_refine_defaults table has columns: distribution_refine_defaults_id, distribution_id, workflow_id. Primary key: distribution_refine_defaults_id. Foreign keys: workflow_id references workflow(workflow_id); distribution_id references distribution(distribution_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The facility table has columns: facility_id, display_name, facility_location, billing_code, facility_status, currency_id, contact_id, sort_order, created_time, created_by, last_modified_time, last_modified_by, is_languaging, is_video_edit, facility_uuid, manual_update, is_dim. Primary key: facility_id. Foreign keys: contact_id references contact(contact_id); currency_id references currency(currency_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The facility_capability table has columns: facility_capability_id, facility_id, language_id, job_type_id, performance_index, capacity. Foreign keys: facility_id references facility(facility_id); language_id references language(language_id); job_type_id references job_type(job_type_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The facility_contact table has columns: facility_id, contact_id. Primary key: facility_id, contact_id. Foreign keys: facility_id references facility(facility_id); contact_id references contact(contact_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The facility_language table has columns: facility_id, language_id. Primary key: facility_id, language_id. Foreign keys: facility_id references facility(facility_id); language_id references language(language_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The facility_operational_region table has columns: facility_id, operational_region_id. Primary key: facility_id, operational_region_id. Foreign keys: facility_id references facility(facility_id); operational_region_id references operational_region(operational_region_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The inventory_lang_xre table has columns: language_id, mdd_language, component. Foreign keys: language_id references language(language_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The job_sub_edit_type table has columns: job_sub_edit_type_id, job_type_id, sub_edit_type_id, created_time, created_by, last_modified_time, last_modified_by. Primary key: job_sub_edit_type_id. Foreign keys: sub_edit_type_id references sub_edit_type(sub_edit_type_id); job_type_id references job_type(job_type_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The job_type table has columns: job_type_id, code, display_name, description, active, sort_order, rally_job_type. Primary key: job_type_id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The job_type_sub_type table has columns: job_type_id, sub_type_id, active, operational_region_code. Primary key: job_type_id, sub_type_id, operational_region_code. Foreign keys: sub_type_id references sub_type(sub_type_id); job_type_id references job_type(job_type_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The language table has columns: language_id, code, display_name, description, active, created_time, created_by, last_modified_time, last_modified_by, legacy_lang_code, is_written, is_spoken. Primary key: language_id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The manifestation_processing_log table has columns: id, timestamp, manifestation_type, edit_id, alternate_id, primary_cut_edit_id, status, error_code, error_message, raw_manifestation. Primary key: id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The ml_model table has columns: model_id, code, name, created_time, created_by, last_modified_time, last_modified_by, active. Primary key: model_id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The network table has columns: network_id, code, display_name, operational_region_id, delivery_location_id, active, sort_order, created_time, created_by, last_modified_time, last_modified_by, description, pss_network_id. Primary key: network_id. Foreign keys: delivery_location_id references sub_type(sub_type_id); operational_region_id references operational_region(operational_region_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The next_id table has columns: max.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The note_category table has columns: note_category_id, code, display_name, description, active, sort_order. Primary key: note_category_id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The notification_subscription table has columns: notification_subscription_id, workflow_id, code, display_name, description, all_fields, active, sort_order, created_time, created_by, last_modified_time, last_modified_by. Primary key: notification_subscription_id. Foreign keys: workflow_id references workflow(workflow_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The notification_subscription_field table has columns: notification_subscription_id, field, created_time, created_by, last_modified_time, last_modified_by. Foreign keys: notification_subscription_id references notification_subscription(notification_subscription_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The notification_subscription_recip table has columns: notification_subscription_id, assignee_id, grouping_id, created_time, created_by, last_modified_time, last_modified_by. Foreign keys: notification_subscription_id references notification_subscription(notification_subscription_id); assignee_id references assignee(assignee_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The operational_group table has columns: operational_group_id, code, display_name, description, active, sort_order, created_time, created_by, last_modified_time, last_modified_by, operational_group_status, contact_id, is_languaging, is_video_edit, operational_region_id, is_dim. Primary key: operational_group_id. Foreign keys: contact_id references contact(contact_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The operational_group_contact table has columns: operational_group_id, contact_id. Primary key: operational_group_id, contact_id. Foreign keys: operational_group_id references operational_group(operational_group_id); contact_id references contact(contact_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The operational_region table has columns: operational_region_id, code, display_name, description, active, sort_order, created_time, created_by, last_modified_time, last_modified_by, notification_preference. Primary key: operational_region_id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The operational_region_contact table has columns: operational_region_id, contact_id. Primary key: operational_region_id, contact_id. Foreign keys: contact_id references contact(contact_id); operational_region_id references operational_region(operational_region_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The permissions table has columns: permission_id, workflow_type_id, role, business_function, has_access, created_time, created_by, last_modified_time, last_modified_by. Primary key: permission_id. Foreign keys: workflow_type_id references workflow_type(workflow_type_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The reference_material table has columns: reference_material_id, code, display_name, description, active. Primary key: reference_material_id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The reference_work_type table has columns: reference_work_type_id, work_type_name, job_type_id, job_type_code, component_type, id_change, active. Primary key: reference_work_type_id. Foreign keys: job_type_id references job_type(job_type_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The reference_work_type_reference_material table has columns: reference_work_type_id, reference_material_id, operational_region_id, type, recut, required. Primary key: reference_work_type_id, reference_material_id, operational_region_id, type. Foreign keys: reference_material_id references reference_material(reference_material_id); reference_work_type_id references reference_work_type(reference_work_type_id); operational_region_id references reference_material(reference_material_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The revinfo table has columns: rev, revtstmp. Primary key: rev.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The rule table has columns: rule_id, code, display_name, description, version, rule_type, rule_value, created_time, created_by, last_modified_time, last_modified_by. Primary key: rule_id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The shedlock table has columns: name, lock_until, locked_at, locked_by. Primary key: name.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The skip_condition table has columns: skip_condition_id, workflow_task_id, field, operator, value. Primary key: skip_condition_id. Foreign keys: workflow_task_id references workflow_task(workflow_task_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The source_task table has columns: source_task_id, work_order_id, case_id, cut_id, created_time, created_by, last_modified_time, last_modified_by, qc_status, case_uuid, cut_type, instance_id. Primary key: source_task_id. Foreign keys: work_order_id references work_order(work_order_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The spring_session table has columns: primary_id, session_id, creation_time, last_access_time, max_inactive_interval, expiry_time, principal_name. Primary key: primary_id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The spring_session_attributes table has columns: session_primary_id, attribute_name, attribute_bytes. Primary key: session_primary_id, attribute_name. Foreign keys: session_primary_id references spring_session(primary_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The standard_duration table has columns: standard_duration_id, key, hours. Primary key: standard_duration_id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The sub_edit_type table has columns: sub_edit_type_id, code, display_name, sort_order, created_time, created_by, last_modified_time, last_modified_by. Primary key: sub_edit_type_id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The sub_type table has columns: sub_type_id, sub_type_category_id, code, display_name, description, active, sort_order. Primary key: sub_type_id. Foreign keys: sub_type_category_id references sub_type_category(sub_type_category_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The sub_type_category table has columns: sub_type_category_id, code, display_name, description, active, sort_order. Primary key: sub_type_category_id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The subscription_condition table has columns: subscription_condition_id, workflow_subscription_id, field, operator, value, active, created_time, created_by, last_modified_time, last_modified_by, workflow_input_id, workflow_id, name, type, is_key_field, default_value, workflow_task_id, key_ordinal, json_path. Primary key: subscription_condition_id. Foreign keys: workflow_subscription_id references workflow_subscription(workflow_subscription_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The subscription_input table has columns: subscription_input_id, workflow_input_id, workflow_subscription_id, field, value, created_time, created_by, last_modified_time, last_modified_by, active. Primary key: subscription_input_id. Foreign keys: workflow_subscription_id references workflow_subscription(workflow_subscription_id); workflow_input_id references workflow_input(workflow_input_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The subscription_router table has columns: subscription_router_id, workflow_subscription_id, field, operator, value, active, created_time, created_by, last_modified_time, last_modified_by, routing_key. Primary key: subscription_router_id. Foreign keys: workflow_subscription_id references workflow_subscription(workflow_subscription_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The task table has columns: task_id, task_type_id, code, display_name, description, created_time, created_by, last_modified_time, last_modified_by. Primary key: task_id. Foreign keys: task_type_id references task_type(task_type_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The task_exec table has columns: task_exec_id, work_order_id, workflow_task_id, task_status_id, assignee_id, assigner, due_date, priority, created_time, created_by, last_modified_time, last_modified_by, schedule_change, is_assigned, complexity_tier. Primary key: task_exec_id. Foreign keys: work_order_id references work_order(work_order_id); workflow_task_id references workflow_task(workflow_task_id); task_status_id references task_status(task_status_id); assignee_id references assignee(assignee_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The task_exec_metadata table has columns: task_exec_id, task_exec_metadata_type_id, value, created_time, created_by, last_modified_time, last_modified_by. Primary key: task_exec_id, task_exec_metadata_type_id. Foreign keys: task_exec_metadata_type_id references task_exec_metadata_type(task_exec_metadata_type_id); task_exec_id references task_exec(task_exec_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The task_exec_metadata_type table has columns: task_exec_metadata_type_id, code, display_name, description, active, sort_order. Primary key: task_exec_metadata_type_id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The task_exec_note table has columns: task_exec_note_id, note_category_id, task_exec_id, note, created_time, created_by, last_modified_time, last_modified_by, active. Primary key: task_exec_note_id. Foreign keys: task_exec_id references task_exec(task_exec_id); note_category_id references note_category(note_category_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The task_status table has columns: task_status_id, code, display_name, description, active, sort_order. Primary key: task_status_id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The task_status_workflow_type table has columns: task_status_workflow_type_id, workflow_type_id, task_status_id, active. Primary key: task_status_workflow_type_id. Foreign keys: workflow_type_id references workflow_type(workflow_type_id); task_status_id references task_status(task_status_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The task_type table has columns: task_type_id, code, display_name, description, active, sort_order. Primary key: task_type_id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The version_prefix table has columns: version_prefix_id, code, display_name, operational_region_id, active, sort_order, created_time, created_by, last_modified_time, last_modified_by. Primary key: version_prefix_id. Foreign keys: operational_region_id references operational_region(operational_region_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The work_order table has columns: work_order_id, asset_id, workflow_id, work_order_status_id, due_date, priority, created_time, created_by, last_modified_time, last_modified_by, work_order_key, internal_work_order_id, distribution_id, operational_group_id, assignee_id, job_type_id, facility_id, operational_region_id, language_id, additional_service, search_identifier_id, search_identifier_value, prop_ep, scrid, show_code, distribution_date, property_id, file_delivery, show_uuid, replacement_status, sub_edit_type, corporate_premiere_date, region_long_name, assessment_results, rally_movie_name, network_short_name, schedule_change, is_assigned, cut_id, rally_movie_id, is_manual_due_date, received_date, cut_type, accurate_player_url, status_before_cancel, include_edit, include_script. Primary key: work_order_id. Foreign keys: workflow_id references workflow(workflow_id); operational_group_id references operational_group(operational_group_id); asset_id references asset(asset_id); language_id references language(language_id); operational_region_id references operational_region(operational_region_id); job_type_id references job_type(job_type_id); sub_edit_type references sub_edit_type(sub_edit_type_id); additional_service references sub_type(sub_type_id); file_delivery references sub_type(sub_type_id); facility_id references facility(facility_id); work_order_status_id references work_order_status(work_order_status_id); distribution_id references distribution(distribution_id); search_identifier_id references asset_metadata_type(asset_metadata_type_id); assignee_id references assignee(assignee_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The work_order_metadata table has columns: work_order_id, work_order_metadata_type_id, value, created_time, created_by, last_modified_time, last_modified_by. Primary key: work_order_id, work_order_metadata_type_id. Foreign keys: work_order_metadata_type_id references work_order_metadata_type(work_order_metadata_type_id); work_order_id references work_order(work_order_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The work_order_metadata_type table has columns: work_order_metadata_type_id, code, display_name, description, active, sort_order. Primary key: work_order_metadata_type_id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The work_order_note table has columns: work_order_note_id, note_category_id, work_order_id, note, created_time, created_by, last_modified_time, last_modified_by, active. Primary key: work_order_note_id. Foreign keys: work_order_id references work_order(work_order_id); note_category_id references note_category(note_category_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The work_order_status table has columns: work_order_status_id, code, display_name, description, active, sort_order. Primary key: work_order_status_id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The work_order_status_workflow_type table has columns: work_order_status_workflow_type_id, workflow_type_id, work_order_status_id, active. Primary key: work_order_status_workflow_type_id. Foreign keys: workflow_type_id references workflow_type(workflow_type_id); work_order_status_id references work_order_status(work_order_status_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The workflow table has columns: workflow_id, workflow_type_id, code, display_name, version, description, active, sort_order, created_time, created_by, last_modified_time, last_modified_by. Primary key: workflow_id. Foreign keys: workflow_type_id references workflow_type(workflow_type_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The workflow_completion_status table has columns: workflow_completion_status_id, workflow_id, work_order_status_id, active, created_time, created_by, last_modified_time, last_modified_by. Primary key: workflow_completion_status_id. Foreign keys: workflow_id references workflow(workflow_id); work_order_status_id references work_order_status(work_order_status_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The workflow_input table has columns: workflow_input_id, workflow_id, name, type, is_key_field, default_value, created_time, created_by, last_modified_time, last_modified_by, workflow_task_id, key_ordinal, json_path. Primary key: workflow_input_id. Foreign keys: workflow_id references workflow(workflow_id); workflow_task_id references workflow_task(workflow_task_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The workflow_job_types table has columns: workflow_id, job_type_id. Primary key: workflow_id, job_type_id. Foreign keys: workflow_id references workflow(workflow_id); job_type_id references job_type(job_type_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The workflow_subscription table has columns: workflow_subscription_id, workflow_id, name, action_type, active, created_time, created_by, last_modified_time, last_modified_by, subscription_condition_id, field, operator, value. Primary key: workflow_subscription_id. Foreign keys: workflow_id references workflow(workflow_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The workflow_task table has columns: workflow_task_id, workflow_id, task_id, created_time, created_by, last_modified_time, last_modified_by, name, sort_order. Primary key: workflow_task_id. Foreign keys: workflow_id references workflow(workflow_id); task_id references task(task_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The workflow_task_dependency table has columns: workflow_task_id, depends_on. Foreign keys: depends_on references workflow_task(workflow_task_id); workflow_task_id references workflow_task(workflow_task_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The workflow_type table has columns: workflow_type_id, code, display_name, description, active, sort_order, created_time, created_by, last_modified_time, last_modified_by, short_name. Primary key: workflow_type_id.",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The workflow_workorder_map table has columns: workflow_id, work_order_id. Primary key: workflow_id. Foreign keys: work_order_id references work_order(work_order_id);",
+    "type": "schema_desc"
+  },
+  {
+    "text": "The workorder_completion_prediction table has columns: work_order_id, model_id, value, primary, created_time, created_by, last_modified_time, last_modified_by, prediction_id. Primary key: prediction_id. Foreign keys: work_order_id references work_order(work_order_id); model_id references ml_model(model_id);",
+    "type": "schema_desc"
+  }
+]

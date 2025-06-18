@@ -1,10 +1,12 @@
 package assistant.mcp;
 
 import assistant.service.QueryExecutionService;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
 
+@Component
 public class SummarizeResultsMcpAction implements McpAction {
     private final QueryExecutionService queryService;
 

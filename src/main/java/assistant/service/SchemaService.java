@@ -1,7 +1,11 @@
 package assistant.service;
 
 import assistant.model.TableInfo;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
@@ -21,9 +25,14 @@ public class SchemaService {
     private final DataSource dataSource;
     private String cachedSchema; // Cache the schema for performance
     private List<TableInfo> cachedTableInfos = null;
+    private final ObjectMapper mapper;
+    private Resource schemaDescription;
 
-    public SchemaService(DataSource dataSource) {
+    public SchemaService(DataSource dataSource,
+                         @Value("classpath:schema/schema_descriptions.json") Resource schemaDescription) {
         this.dataSource = dataSource;
+        this.mapper = new ObjectMapper();
+        this.schemaDescription = schemaDescription;
     }
 
     public String getDatabaseSchemaAsPrompt() {
@@ -104,44 +113,47 @@ public class SchemaService {
         if (cachedTableInfos != null) {
             return cachedTableInfos;
         }
-        List<TableInfo> tables = new ArrayList<>();
-        try (Connection connection = dataSource.getConnection()) {
-            DatabaseMetaData metaData = connection.getMetaData();
-            ResultSet rsTables = metaData.getTables(null, null, "%", new String[]{"TABLE"});
-            while (rsTables.next()) {
-                String tableName = rsTables.getString("TABLE_NAME");
-                if (tableName.toLowerCase().endsWith("_aud")) {
-                    continue;
-                }
-                TableInfo info = new TableInfo();
-                info.setTableName(tableName);
+        List<TableInfo> tables = readTableInfosFromFile();
+        if (tables.isEmpty()) {
+            try (Connection connection = dataSource.getConnection()) {
+                DatabaseMetaData metaData = connection.getMetaData();
+                ResultSet rsTables = metaData.getTables(null, null, "%", new String[]{"TABLE"});
+                while (rsTables.next()) {
+                    String tableName = rsTables.getString("TABLE_NAME");
+                    if (tableName.toLowerCase().endsWith("_aud")) {
+                        continue;
+                    }
+                    TableInfo info = new TableInfo();
+                    info.setTableName(tableName);
 
-                ResultSet rsColumns = metaData.getColumns(null, null, tableName, "%");
-                while (rsColumns.next()) {
-                    info.getColumns().add(rsColumns.getString("COLUMN_NAME"));
-                }
-                rsColumns.close();
+                    ResultSet rsColumns = metaData.getColumns(null, null, tableName, "%");
+                    while (rsColumns.next()) {
+                        info.getColumns().add(rsColumns.getString("COLUMN_NAME"));
+                    }
+                    rsColumns.close();
 
-                ResultSet rsPK = metaData.getPrimaryKeys(null, null, tableName);
-                while (rsPK.next()) {
-                    info.getPrimaryKeys().add(rsPK.getString("COLUMN_NAME"));
-                }
-                rsPK.close();
+                    ResultSet rsPK = metaData.getPrimaryKeys(null, null, tableName);
+                    while (rsPK.next()) {
+                        info.getPrimaryKeys().add(rsPK.getString("COLUMN_NAME"));
+                    }
+                    rsPK.close();
 
-                ResultSet rsFK = metaData.getImportedKeys(null, null, tableName);
-                while (rsFK.next()) {
-                    String fkColumn = rsFK.getString("FKCOLUMN_NAME");
-                    String pkTable = rsFK.getString("PKTABLE_NAME");
-                    String pkColumn = rsFK.getString("PKCOLUMN_NAME");
-                    info.getForeignKeys().put(fkColumn, new TableInfo.ForeignKeyReference(pkTable, pkColumn));
-                }
-                rsFK.close();
+                    ResultSet rsFK = metaData.getImportedKeys(null, null, tableName);
+                    while (rsFK.next()) {
+                        String fkColumn = rsFK.getString("FKCOLUMN_NAME");
+                        String pkTable = rsFK.getString("PKTABLE_NAME");
+                        String pkColumn = rsFK.getString("PKCOLUMN_NAME");
+                        info.getForeignKeys().put(fkColumn, new TableInfo.ForeignKeyReference(pkTable, pkColumn));
+                    }
+                    rsFK.close();
 
-                tables.add(info);
+                    tables.add(info);
+                }
+                rsTables.close();
             }
-            rsTables.close();
         }
         cachedTableInfos = tables;
+        log.info("Fetched table infos: {}", tables);
         return tables;
     }
 
@@ -150,36 +162,38 @@ public class SchemaService {
     }
 
     public List<Map<String, Object>> getSchemaDescriptions() {
-        List<Map<String, Object>> schemaDescriptions = new ArrayList<>();
-        try {
-            for (TableInfo info : fetchTableInfos()) {
-                StringBuilder desc = new StringBuilder();
-                desc.append("The ").append(info.getTableName())
-                        .append(" table has columns: ").append(String.join(", ", info.getColumns())).append(".");
+        List<Map<String, Object>> schemaDescriptions = getSchemaDescriptionsFromFile();
+        if (schemaDescriptions.isEmpty()) {
+            try {
+                for (TableInfo info : fetchTableInfos()) {
+                    StringBuilder desc = new StringBuilder();
+                    desc.append("The ").append(info.getTableName())
+                            .append(" table has columns: ").append(String.join(", ", info.getColumns())).append(".");
 
-                if (!info.getPrimaryKeys().isEmpty()) {
-                    desc.append(" Primary key: ").append(String.join(", ", info.getPrimaryKeys())).append(".");
+                    if (!info.getPrimaryKeys().isEmpty()) {
+                        desc.append(" Primary key: ").append(String.join(", ", info.getPrimaryKeys())).append(".");
+                    }
+
+                    if (!info.getForeignKeys().isEmpty()) {
+                        desc.append(" Foreign keys: ");
+                        info.getForeignKeys().forEach((fk, ref) ->
+                                desc.append(fk)
+                                        .append(" references ")
+                                        .append(ref.getReferencedTable())
+                                        .append("(")
+                                        .append(ref.getReferencedColumn())
+                                        .append("); ")
+                        );
+                    }
+
+                    Map<String, Object> entry = new HashMap<>();
+                    entry.put("text", desc.toString().trim());
+                    entry.put("type", "schema_desc");
+                    schemaDescriptions.add(entry);
                 }
-
-                if (!info.getForeignKeys().isEmpty()) {
-                    desc.append(" Foreign keys: ");
-                    info.getForeignKeys().forEach((fk, ref) ->
-                            desc.append(fk)
-                                    .append(" references ")
-                                    .append(ref.getReferencedTable())
-                                    .append("(")
-                                    .append(ref.getReferencedColumn())
-                                    .append("); ")
-                    );
-                }
-
-                Map<String, Object> entry = new HashMap<>();
-                entry.put("text", desc.toString().trim());
-                entry.put("type", "schema_desc");
-                schemaDescriptions.add(entry);
+            } catch (SQLException e) {
+                System.err.println("Error fetching schema descriptions: " + e.getMessage());
             }
-        } catch (SQLException e) {
-            System.err.println("Error fetching schema descriptions: " + e.getMessage());
         }
         log.info("Schema descriptions: {}", schemaDescriptions);
         return schemaDescriptions;
@@ -253,5 +267,30 @@ public class SchemaService {
             log.error("Error fetching relevant schema: {}", e.getMessage());
         }
         return schemaBuilder.toString();
+    }
+
+    public List<Map<String, Object>> getSchemaDescriptionsFromFile() {
+        try {
+            return mapper.readValue(
+                    schemaDescription.getInputStream(),
+                    mapper.getTypeFactory().constructCollectionType(List.class, Map.class)
+            );
+        } catch (Exception e) {
+            log.error("Error reading schema_descriptions.json: {}", e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    public List<TableInfo> readTableInfosFromFile() {
+        try {
+            Resource resource = new ClassPathResource("/schema/tables.json");
+            return mapper.readValue(
+                    resource.getInputStream(),
+                    mapper.getTypeFactory().constructCollectionType(List.class, TableInfo.class)
+            );
+        } catch (Exception e) {
+            log.error("Error reading tables.json: {}", e.getMessage());
+            return new ArrayList<>();
+        }
     }
 }

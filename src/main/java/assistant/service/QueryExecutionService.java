@@ -79,7 +79,9 @@ public class QueryExecutionService {
         String databaseSchema = schemaService.getRelevantSchemaFromContext(ragContext);
 
         String prompt = buildLlmPrompt(userQuery, databaseSchema, ragContext, previousContext, conversationId);
+        log.info("Generated LLM prompt: {}", prompt);
         String llmResponse = chatModel.generate(prompt);
+        log.info("LLM response: {}", llmResponse);
 
         String finalResult = null;
         String lastAction = null;
@@ -97,6 +99,7 @@ public class QueryExecutionService {
                 log.info("LLM requested action: {}, params: {}", action, params);
 
                 Object mcpResult = mcpActionDispatcher.dispatch(action, params);
+                log.info("MCP action result: {}", mcpResult);
 
                 // Save turn in history
                 ConversationTurn turn = new ConversationTurn();
@@ -120,7 +123,9 @@ public class QueryExecutionService {
 
                 // Prepare next LLM prompt with the result of the last action
                 String nextPrompt = buildFollowupPrompt(userQuery, databaseSchema, ragContext, previousContext, conversationId, action, mcpResult);
+                log.info("Followup LLM prompt: {}", nextPrompt);
                 llmResponse = chatModel.generate(nextPrompt);
+                log.info("Followup LLM response: {}", llmResponse);
 
                 lastAction = action;
                 lastParams = params;
@@ -142,17 +147,18 @@ public class QueryExecutionService {
                 You are an intelligent assistant for a PostgreSQL database with access to the following tools (MCP actions):
 
                 Available actions:
-                - validate_user_request: Check if the user query is valid and actionable.
-                - generate_sql: Generate SQL for a valid user query.
-                - validate_query: Validate a SQL query for safety and correctness.
+                - validate_user_request: Check if the user query is actionable.
+                - generate_sql: Generate a SQL statement for a valid user query.
+                - check_query: Check the generated SQL query for safety and correctness.
                 - execute_query: Execute a SQL query and return results.
                 - explain_query: Get the execution plan for a SQL query.
                 - summarize_results: Summarize a large result set.
 
                 Instructions:
                 - Always start with validate_user_request.
+                - Respond only with one JSON object for action.
                 - If valid, use generate_sql to create SQL.
-                - Validate the generated SQL with validate_query.
+                - Validate the generated SQL with check_query.
                 - Then use execute_query to run the SQL.
                 - If execute_query fails, use generate_sql again with the failure reason.
                 - If the result is too large, use explain_query and summarize_results.
@@ -191,17 +197,18 @@ public class QueryExecutionService {
                 You are an intelligent assistant for a PostgreSQL database with access to the following tools (MCP actions):
     
                 Available actions:
-                - validate_user_request: Check if the user query is valid and actionable.
-                - generate_sql: Generate SQL for a valid user query.
-                - validate_query: Validate a SQL query for safety and correctness.
+                - validate_user_request: Check if the user query is actionable.
+                - generate_sql: Generate a SQL statement for a valid user query.
+                - check_query: Check the generated SQL query for safety and correctness.
                 - execute_query: Execute a SQL query and return results.
                 - explain_query: Get the execution plan for a SQL query.
                 - summarize_results: Summarize a large result set.
     
                 Instructions:
                 - Always start with validate_user_request.
+                - Respond only with one JSON object for action.
                 - If valid, use generate_sql to create SQL.
-                - Validate the generated SQL with validate_query.
+                - Check the generated SQL with check_query.
                 - Then use execute_query to run the SQL.
                 - If execute_query fails, use generate_sql again with the failure reason.
                 - If the result is too large, use explain_query and summarize_results.
@@ -229,7 +236,7 @@ public class QueryExecutionService {
                   }
                 }
                 {
-                  "action": "validate_query",
+                  "action": "check_query",
                   "params": {
                     "sql": "<sql statement>"
                   }
