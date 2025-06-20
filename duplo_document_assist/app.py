@@ -1,16 +1,23 @@
-from langchain.vectorstores.chroma import Chroma
+from langchain_chroma import Chroma
 from langchain.prompts import ChatPromptTemplate
-from langchain_community.llms.ollama import Ollama
+from langchain_ollama import OllamaEmbeddings, OllamaLLM
 from get_embedding_function import get_embedding_function
+import os
+import streamlit as st
+from intent import get_best_intent
+import requests
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
 
 
-CHROMA_PATH = "/db_chat"
+
+current_path = os.getcwd()
+CHROMA_PATH = current_path + "/db_chat"
+FRONT_END_PATH = current_path + "/templates/template.html"
 
 PROMPT_TEMPLATE = """
 Answer the question based only on the following context:
@@ -33,23 +40,39 @@ def query_rag(query_text: str):
     prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
     prompt = prompt_template.format(context=context_text, question=query_text)
 
-    model = Ollama(model="llama3.2")
+    model = OllamaLLM(model="llama3.2")
     response_text = model.invoke(prompt)
-    # print(context_text)  # Printing before giving it to llm
-
     sources = [doc.metadata.get("id", None) for doc, _score in results]
     return response_text, sources
 
 
+@app.route('/')
+def home():
+    return render_template('template.html')
+
 @app.route('/process', methods=['POST'])
 def process():
     data = request.json
-   
     query_text = data['text']
+    conversationId = data['conversationID']
     if not query_text:
         return jsonify({'error': 'No query text provided'}), 400
-    result,sources = query_rag(query_text)
-    return jsonify({'result': result, "sources": sources})
+    intent = get_best_intent(query_text)
+    if intent =="answer":
+        result,sources = query_rag(query_text)
+        data = jsonify({'result': result, "sources": sources})
+        return data
+    if intent == "sql":
+        url = "http://localhost:8080/assistant?conversationId=" + conversationId
+        headers = {"Content-Type": "text/plain"}
+        response = requests.post(url, headers=headers, data=query_text)
+        return response
+
+
+
+
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
