@@ -1,0 +1,189 @@
+[
+  {
+    "id": 1,
+    "query": "What is the operational_region_id for distribution_id 1893?",
+    "expected_result": 4,
+    "match_type": "exact"
+  },
+  {
+    "id": 2,
+    "query": "Count the number of work_order_id with status Materials Pending?",
+    "expected_result": 49,
+    "match_type": "minimum"
+  },
+  {
+    "id": 3,
+    "query": "The facility_id 1163 was created by ?",
+    "expected_result": "Daniel.Lim@wbd.com",
+    "match_type": "exact"
+  },
+  {
+    "id": 4,
+    "query": "Show the work_order_id of all work orders assigned to assignee_id 42.",
+    "expected_result": [
+      "39a97c30-9164-428c-aef2-6089032f8735",
+      "ba89de49-0d4d-42f3-a072-347fb9b6d57c",
+      "c9b4d590-9ba5-4917-92a2-f0fac16f8055",
+      "8feee91d-9388-4d58-86ec-26ad204c3c45",
+      "d9c1ea4e-5ff6-4bdb-bcd9-8a6443a6e116",
+      "18f46f8f-7cbf-482a-bf34-de3da65a6f39",
+      "0f5b576f-9046-4e9c-8deb-5339194f63c6",
+      "e0a2c599-0b01-4642-90c0-bc0f1517db20",
+      "dcde6cb8-e0b7-488f-bf32-4ba1f050f37d",
+      "690ccf75-0d13-4912-8a00-efc12109741b",
+      "8f0ed12c-8be7-4db7-8eda-508f642593d4",
+      "5a33ce53-8f0c-4e6a-baa8-5e12a6672d4f"
+    ],
+    "match_type": "subset"
+  },
+  {
+    "id": 5,
+    "query": "What is the due date for work order 8feee91d-9388-4d58-86ec-26ad204c3c45?",
+    "expected_result": "2025-06-27 16:59:15.",
+    "match_type": "temporal_range"
+  },
+  {
+    "id": 6,
+    "query": "List all work orders last modified by user 'samkit.shah@wbd.com'.",
+    "expected_result": [
+      "39a97c30-9164-428c-aef2-6089032f8735",
+      "ba89de49-0d4d-42f3-a072-347fb9b6d57c",
+      "c9b4d590-9ba5-4917-92a2-f0fac16f8055",
+      "8feee91d-9388-4d58-86ec-26ad204c3c45",
+      "d9c1ea4e-5ff6-4bdb-bcd9-8a6443a6e116",
+      "18f46f8f-7cbf-482a-bf34-de3da65a6f39",
+      "0f5b576f-9046-4e9c-8deb-5339194f63c6",
+      "e0a2c599-0b01-4642-90c0-bc0f1517db20",
+      "8f0ed12c-8be7-4db7-8eda-508f642593d4",
+      "690ccf75-0d13-4912-8a00-efc12109741b",
+      "dcde6cb8-e0b7-488f-bf32-4ba1f050f37d",
+      "5a33ce53-8f0c-4e6a-baa8-5e12a6672d4f"
+    ],
+    "match_type": "subset"
+  },
+  {
+    "id": 7,
+    "query": "How many distribution_id are from the operational_region APAC ?",
+    "expected_result": 191,
+    "match_type": "minimum"
+  },
+  {
+    "id": 8,
+    "query": "Show all work orders with status 'New'.",
+    "expected_result": [
+      "5b1b26fd-1dc2-4058-85db-11112b46261c",
+      "b34a9d7c-dc9c-4670-9b93-f0d356388eb5",
+      "27aebb29-1001-4ce9-aede-c6bcb5543ba6",
+      "3bd16ada-4bd2-4d45-974f-8abce9c6456e",
+      "bf94da1b-3bfa-486b-931b-36b8e93cb077",
+      "8f0ed12c-8be7-4db7-8eda-508f642593d4",
+      "690ccf75-0d13-4912-8a00-efc12109741b",
+      "49261cfa-af33-4ed1-9269-bd3a03084e78",
+      "dcde6cb8-e0b7-488f-bf32-4ba1f050f37d",
+      "5a33ce53-8f0c-4e6a-baa8-5e12a6672d4f",
+      "b5231c98-80b5-416b-b51d-8b9aad227334",
+      "e13b9707-428f-4ed5-be2e-53d4479f0654",
+      "eb8db2e2-ffdd-43e1-b340-6c42d531f9da",
+      "f76a30d5-aa9c-496c-8943-20c49830ad5c",
+      "fa32098b-32a6-4e38-aa9d-c1f6e182a6ef",
+      "0bf40e92-be7f-4f44-9cec-5df539097b1f"
+    ],
+    "match_type": "subset"
+  },
+  {
+    "id": 9,
+    "query": "How many task_exec_id have the status 'push_materials'?",
+    "expected_result": 66,
+    "match_type": "minimum"
+  },
+  {
+    "id": 10,
+    "query": "Which display name appears most frequently in the default_config ?",
+    "expected_result": "DNA Disc Plus India Premiers",
+    "match_type": "exact"
+  },
+  {
+    "id": 11,
+    "query": "What is the latest created work order?",
+    "expected_result": "d6e6ed8b-2a3a-4630-8c47-2f2d83bfd0f7",
+    "match_type": "string"
+  },
+  {
+    "id": 12,
+    "query": "List all unique assignees for work orders.",
+    "expected_result": [
+      "Gayathri Kaliaperumal",
+      "Samkit Shah",
+      "Lisa Seeto"
+    ],
+    "match_type": "subset"
+  },
+  {
+    "id": 13,
+    "query": "How many work orders are assigned to each assignee?",
+    "expected_result": [
+      {
+        "assignee": "Bitan Biswas",
+        "count": 51
+      },
+      {
+        "assignee": "Samkit Shah",
+        "count": 89
+      },
+      {
+        "assignee": "Lisa Seeto",
+        "count": 372
+      }
+    ],
+    "match_type": "top_entity_and_threshold"
+  },
+  {
+    "id": 14,
+    "query": "Show the first and last created_time for all assets where the owning network is 'Adult Swim - LATAM'",
+    "expected_result": {
+      "first_created_time": "2023-10-24 19:33:50.925",
+      "last_created_time": "2024-03-27 08:01:05.718"
+    },
+    "match_type": "exact"
+  },
+  {
+    "id": 15,
+    "query": "Show the network display_name that has the fewest associated assets.",
+    "expected_result": "Animal Planet - Taiwan",
+    "match_type": "exact"
+  },
+  {
+    "id": 16,
+    "query": "Show the task_exec_id with the earliest due date.",
+    "expected_result": "2232362",
+    "match_type": "numeric"
+  },
+  {
+    "id": 17,
+    "query": "How many task_exec have the workorder_id 6297c3b8-9992-45c8-a4cf-89082f22744e?",
+    "expected_result": 7,
+    "match_type": "minimum"
+  },
+  {
+    "id": 18,
+    "query": "List all default_config_id created after 2024-06-01.",
+    "expected_result": [
+      "4246","4247","4248","1772","4243","4244","4245","4279",
+      "1228","1086","4276","4277","4278","4280","4281","16435",
+      "4282","1613","4283"
+    ],
+    "match_type": "subset"
+  },
+  {
+    "id": 19,
+    "query": "List the default_config_id values for configurations where the job type is 'Closed Captioning' and the language is 'Spanish (Latin American)'",
+    "expected_result": "1336",
+    "match_type": "subset"
+  },
+  {
+    "id": 20,
+    "query": "Count the number of default configuration IDs where the job type is \"Graphics List\".",
+    "expected_result": 47,
+    "match_type": "minimum"
+  }
+]
