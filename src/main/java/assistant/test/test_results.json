@@ -1,0 +1,269 @@
+[
+  {
+    "id": 1,
+    "query": "What is the operational_region_id for distribution_id 1893?",
+    "expected": 4,
+    "actual": 4,
+    "natural_response": "The operational region id for distribution id 1893 is 4.",
+    "match_type": "exact",
+    "status": "PASS"
+  },
+  {
+    "id": 2,
+    "query": "Count the number of work_order_id with status Materials Pending?",
+    "expected": 49,
+    "actual": 63,
+    "natural_response": "There are 63 work orders with the status \"Materials Pending\".",
+    "match_type": "minimum",
+    "status": "PASS"
+  },
+  {
+    "id": 3,
+    "query": "The facility_id 1163 was created by ?",
+    "expected": "Daniel.Lim@wbd.com",
+    "actual": "The",
+    "natural_response": "The facility_id 1163 was created by the contact with the name \"John Doe\".",
+    "match_type": "exact",
+    "status": "FAIL"
+  },
+  {
+    "id": 4,
+    "query": "Show the work_order_id of all work orders assigned to assignee_id 42.",
+    "expected": [
+      "39a97c30-9164-428c-aef2-6089032f8735",
+      "ba89de49-0d4d-42f3-a072-347fb9b6d57c",
+      "c9b4d590-9ba5-4917-92a2-f0fac16f8055",
+      "8feee91d-9388-4d58-86ec-26ad204c3c45",
+      "d9c1ea4e-5ff6-4bdb-bcd9-8a6443a6e116",
+      "18f46f8f-7cbf-482a-bf34-de3da65a6f39",
+      "0f5b576f-9046-4e9c-8deb-5339194f63c6",
+      "e0a2c599-0b01-4642-90c0-bc0f1517db20",
+      "dcde6cb8-e0b7-488f-bf32-4ba1f050f37d",
+      "690ccf75-0d13-4912-8a00-efc12109741b",
+      "8f0ed12c-8be7-4db7-8eda-508f642593d4",
+      "5a33ce53-8f0c-4e6a-baa8-5e12a6672d4f"
+    ],
+    "actual": [],
+    "natural_response": "The user asked for the work_order_id of all work orders assigned to assignee_id 42. The SQL executed was:\nSELECT work_order.work_order_id FROM task_exec LEFT JOIN work_order ON task_exec.work_order_id = work_order.work_order_id WHERE assignee_id = 42\nThe raw data from the database is:\nError executing SQL: StatementCallback; bad SQL grammar [SELECT work_order.work_order_id FROM task_exec LEFT JOIN work_order ON task_exec.work_order_id = work_order.work_order_id WHERE assignee_id = 42]\nThe user's original question was not answered directly from the raw data provided.",
+    "match_type": "subset",
+    "status": "FAIL"
+  },
+  {
+    "id": 5,
+    "query": "What is the due date for work order 8feee91d-9388-4d58-86ec-26ad204c3c45?",
+    "expected": "2025-06-27 16:59:15.",
+    "actual": "The",
+    "natural_response": "The due date for the work order 8feee91d-9388-4d58-86ec-26ad204c3c45 is 2025-06-27 16:59:15.",
+    "match_type": "temporal_range",
+    "status": "FAIL"
+  },
+  {
+    "id": 6,
+    "query": "List all work orders last modified by user 'samkit.shah@wbd.com'.",
+    "expected": [
+      "39a97c30-9164-428c-aef2-6089032f8735",
+      "ba89de49-0d4d-42f3-a072-347fb9b6d57c",
+      "c9b4d590-9ba5-4917-92a2-f0fac16f8055",
+      "8feee91d-9388-4d58-86ec-26ad204c3c45",
+      "d9c1ea4e-5ff6-4bdb-bcd9-8a6443a6e116",
+      "18f46f8f-7cbf-482a-bf34-de3da65a6f39",
+      "0f5b576f-9046-4e9c-8deb-5339194f63c6",
+      "e0a2c599-0b01-4642-90c0-bc0f1517db20",
+      "8f0ed12c-8be7-4db7-8eda-508f642593d4",
+      "690ccf75-0d13-4912-8a00-efc12109741b",
+      "dcde6cb8-e0b7-488f-bf32-4ba1f050f37d",
+      "5a33ce53-8f0c-4e6a-baa8-5e12a6672d4f"
+    ],
+    "actual": [],
+    "natural_response": "The user asked for all work orders last modified by the user \"samkit.shah@wbd.com\". The SQL executed was:\nSELECT work_order.work_order_id, work_order.due_date, work_order.priority, work_order.created_by, work_order.last_modified_by, work_order_status.display_name AS status, asset.asset_id, asset.display_name AS asset_name\nFROM work_order\nLEFT JOIN work_order_status ON work_order.work_order_status_id = work_order_status.work_order_status_id\nLEFT JOIN asset ON work_order.asset_id = asset.asset_id\nWHERE work_order.last_modified_by = 'samkit.shah@wbd.com'\nLIMIT 100;\nThe raw data from the database is:\nError executing SQL: StatementCallback; bad SQL grammar [SELECT work_order.work_order_id, work_order.due_date, work_order.priority, work_order.created_by, work_order.last_modified_by, work_order_status.display_name AS status, asset.asset_id, asset.display_name AS asset_name\nFROM work_order\nLEFT JOIN work_order_status ON work_order.work_order_status_id = work_order_status.work_order_status_id\nLEFT JOIN asset ON work_order.asset_id = asset.asset_id\nWHERE work_order.last_modified_by = 'samkit.shah@wbd.com'\nLIMIT 100;]\n\nThe user asked for all work orders last modified by the user \"samkit.shah@wbd.com\". The SQL executed was:\nSELECT work_order.work_order_id, work_order.due_date, work_order.priority, work_order.created_by, work_order.last_modified_by, work_order_status.display_name AS status, asset.asset_id, asset.display_name AS asset_name\nFROM work_order\nLEFT JOIN work_order_status ON work_order.work_order_status_id = work_order_status.work_order_status_id\nLEFT JOIN asset ON work_order.asset_id = asset.asset_id\nWHERE work_order.last_modified_by = 'samkit.shah@wbd.com'\nLIMIT 100;\nThe raw data from the database is:\nError executing SQL: StatementCallback; bad SQL grammar [SELECT work_order.work_order_id, work_order.due_date, work_order.priority, work_order.created_by, work_order.last_modified_by, work_order_status.display_name AS status, asset.asset_id, asset.display_name AS asset_name\nFROM work_order\nLEFT JOIN work_order_status ON work_order.work_order_status_id = work_order_status.work_order_status_id\nLEFT JOIN asset ON work_order.asset_id = asset.asset_id\nWHERE work_order.last_modified_by = 'samkit.shah@wbd.com'\nLIMIT 100;]\n\nThe user asked for all work orders last modified by the user \"samkit.shah@wbd.com\". The SQL executed was:\nSELECT work_order.work_order_id, work_order.due_date, work_order.priority, work_order.created_by, work_order.last_modified_by, work_order_status.display_name AS status, asset.asset_id, asset.display_name AS asset_name\nFROM work_order\nLEFT JOIN work_order_status ON work_order.work_order_status_id = work_order_status.work_order_status_id\nLEFT JOIN asset ON work_order.asset_id = asset.asset_id\nWHERE work_order.last_modified_by = 'samkit.shah@wbd.com'\nLIMIT 100;\nThe raw data from the database is:\nError executing SQL: StatementCallback; bad SQL grammar [SELECT work_order.work_order_id, work_order.due_date, work_order.priority, work_order.created_by, work_order.last_modified_by, work_order_status.display_name AS status, asset.asset_id, asset.display_name AS asset_name\nFROM work_order\nLEFT JOIN work_order_status ON work_order.work_order_status_id = work_order_status.work_order_status_id\nLEFT JOIN asset ON work_order.asset_id = asset.asset_id\nWHERE work_order.last_modified_by = 'samkit.shah@wbd.com'\nLIMIT 100;]",
+    "match_type": "subset",
+    "status": "FAIL"
+  },
+  {
+    "id": 7,
+    "query": "How many distribution_id are from the operational_region APAC ?",
+    "expected": 191,
+    "actual": 100,
+    "natural_response": "The user asked: \"How many distribution_id are from the operational_region APAC ?\"\nThe SQL executed was:\nSELECT DISTINCT d.distribution_id FROM distribution d LEFT JOIN facility_operational_region f ON d.distribution_id = f.distribution_id WHERE f.operational_region_id = 'APAC' LIMIT 100\nThe raw data from the database is:\nError executing SQL: StatementCallback; bad SQL grammar [SELECT DISTINCT d.distribution_id FROM distribution d LEFT JOIN facility_operational_region f ON d.distribution_id = f.distribution_id WHERE f.operational_region_id = 'APAC' LIMIT 100]\nThe answer to the user's question is: \"There are no distribution_id from the operational_region APAC.\"",
+    "match_type": "minimum",
+    "status": "FAIL"
+  },
+  {
+    "id": 8,
+    "query": "Show all work orders with status 'New'.",
+    "expected": [
+      "5b1b26fd-1dc2-4058-85db-11112b46261c",
+      "b34a9d7c-dc9c-4670-9b93-f0d356388eb5",
+      "27aebb29-1001-4ce9-aede-c6bcb5543ba6",
+      "3bd16ada-4bd2-4d45-974f-8abce9c6456e",
+      "bf94da1b-3bfa-486b-931b-36b8e93cb077",
+      "8f0ed12c-8be7-4db7-8eda-508f642593d4",
+      "690ccf75-0d13-4912-8a00-efc12109741b",
+      "49261cfa-af33-4ed1-9269-bd3a03084e78",
+      "dcde6cb8-e0b7-488f-bf32-4ba1f050f37d",
+      "5a33ce53-8f0c-4e6a-baa8-5e12a6672d4f",
+      "b5231c98-80b5-416b-b51d-8b9aad227334",
+      "e13b9707-428f-4ed5-be2e-53d4479f0654",
+      "eb8db2e2-ffdd-43e1-b340-6c42d531f9da",
+      "f76a30d5-aa9c-496c-8943-20c49830ad5c",
+      "fa32098b-32a6-4e38-aa9d-c1f6e182a6ef",
+      "0bf40e92-be7f-4f44-9cec-5df539097b1f"
+    ],
+    "actual": [],
+    "natural_response": "The following is a summary of the raw data provided:\n\nWork Orders:\n\n* Search Identifier Value: 230880.001\n* Status: In Progress\n* Assignee Display Name: John Doe\n* Search Identifier Value: 230880.002\n* Status: Completed\n* Assignee Display Name: Jane Smith\n* Search Identifier Value: 230880.005\n* Status: In Progress\n* Assignee Display Name: John Doe\n\nTasks:\n\n* Task Name: Task 1\n* Status: In Progress\n* Days Not Progressed: 3\n* Task Name: Task 2\n* Status: Completed\n* Days Not Progressed: 0\n* Task Name: Task 3\n* Status: In Progress\n* Days Not Progressed: 5\n\nNote that the raw data provided only includes a few work orders and tasks, but this summary should be representative of the entire dataset.",
+    "match_type": "subset",
+    "status": "FAIL"
+  },
+  {
+    "id": 9,
+    "query": "How many task_exec_id have the status 'push_materials'?",
+    "expected": 66,
+    "actual": null,
+    "natural_response": "There are no task_exec_id with the status of \"push_materials\".",
+    "match_type": "minimum",
+    "status": "FAIL"
+  },
+  {
+    "id": 10,
+    "query": "Which display name appears most frequently in the default_config ?",
+    "expected": "DNA Disc Plus India Premiers",
+    "actual": "The",
+    "natural_response": "The user asked: \"Which display name appears most frequently in the default_config ?\"\nThe SQL executed was:\nSELECT DISTINCT display_name\nFROM default_config\nJOIN default_config_metadata ON default_config.default_config_id = default_config_metadata.default_config_id\nJOIN default_config_metadata_type ON default_config_metadata.default_config_metadata_type_id = default_config_metadata_type.default_config_metadata_type_id\nWHERE code IN ('display_name')\nLIMIT 100;\nThe raw data from the database is:\n[]\n\nThere are no display names in the default_config table.",
+    "match_type": "exact",
+    "status": "FAIL"
+  },
+  {
+    "id": 11,
+    "query": "What is the latest created work order?",
+    "expected": "d6e6ed8b-2a3a-4630-8c47-2f2d83bfd0f7",
+    "actual": "The",
+    "natural_response": "The latest created work order is: 10000000000000000000000000000000",
+    "match_type": "string",
+    "status": "FAIL"
+  },
+  {
+    "id": 12,
+    "query": "List all unique assignees for work orders.",
+    "expected": [
+      "Gayathri Kaliaperumal",
+      "Samkit Shah",
+      "Lisa Seeto"
+    ],
+    "actual": [],
+    "natural_response": "The user asked for a list of unique assignees for work orders. The SQL query executed was:\nSELECT DISTINCT a.display_name AS assignee_name\nFROM task_exec t\nLEFT JOIN work_order w ON t.work_order_id = w.work_order_id\nLEFT JOIN assignee a ON t.assignee_id = a.assignee_id\nWHERE w.work_order_status_id IN (SELECT code FROM work_order_status WHERE active = true)\nORDER BY assignee_name ASC\nLIMIT 100;\nThe raw data from the database is:\nError executing SQL: StatementCallback; bad SQL grammar [SELECT DISTINCT a.display_name AS assignee_name\nFROM task_exec t\nLEFT JOIN work_order w ON t.work_order_id = w.work_order_id\nLEFT JOIN assignee a ON t.assignee_id = a.assignee_id\nWHERE w.work_order_status_id IN (SELECT code FROM work_order_status WHERE active = true)\nORDER BY assignee_name ASC\nLIMIT 100;]\nThe SQL query executed was not able to execute due to bad grammar.",
+    "match_type": "subset",
+    "status": "FAIL"
+  },
+  {
+    "id": 13,
+    "query": "How many work orders are assigned to each assignee?",
+    "expected": [
+      {
+        "assignee": "Bitan Biswas",
+        "count": 51
+      },
+      {
+        "assignee": "Samkit Shah",
+        "count": 89
+      },
+      {
+        "assignee": "Lisa Seeto",
+        "count": 372
+      }
+    ],
+    "actual": [],
+    "natural_response": "The user asked: \"How many work orders are assigned to each assignee?\"\nThe SQL executed was:\nSELECT a.display_name AS assignee, COUNT(w.work_order_id) AS num_work_orders\nFROM task_exec t\nJOIN work_order w ON t.work_order_id = w.work_order_id\nJOIN assignee a ON t.assignee_id = a.assignee_id\nGROUP BY a.display_name\nLIMIT 100;\nThe raw data from the database is:\n[{\"assignee\":\"Erin Lin\",\"num_work_orders\":8},{\"assignee\":\"Bitan Biswas\",\"num_work_orders\":51},{\"assignee\":\"Srinandan Kota\",\"num_work_orders\":11},{\"assignee\":\"Samkit Shah\",\"num_work_orders\":89},{\"assignee\":\"Clarice Dallorto\",\"num_work_orders\":11},{\"assignee\":\"Gayathri Kaliaperumal\",\"num_work_orders\":2},{\"assignee\":\"Aditi Jadon\",\"num_work_orders\":1},{\"assignee\":\"Sushant Kumar\",\"num_work_orders\":24},{\"assignee\":\"Lisa Seeto\",\"num_work_orders\":372},{\"assignee\":\"Sumedha Mandal\",\"num_work_orders\":5}]\n\nThe answer to the user's question is:\nErin Lin has 8 work orders assigned.\nBitan Biswas has 51 work orders assigned.\nSrinandan Kota has 11 work orders assigned.\nSamkit Shah has 89 work orders assigned.\nClarice Dallorto has 11 work orders assigned.\nGayathri Kaliaperumal has 2 work orders assigned.\nAditi Jadon has 1 work order assigned.\nSushant Kumar has 24 work orders assigned.\nLisa Seeto has 372 work orders assigned.\nSumedha Mandal has 5 work orders assigned.",
+    "match_type": "top_entity_and_threshold",
+    "status": "FAIL"
+  },
+  {
+    "id": 14,
+    "query": "Show the first and last created_time for all assets where the owning network is 'Adult Swim - LATAM'",
+    "expected": {
+      "first_created_time": "2023-10-24 19:33:50.925",
+      "last_created_time": "2024-03-27 08:01:05.718"
+    },
+    "actual": {
+      "first_created_time": "2023-10-24 19:33:50.925",
+      "last_created_time": "2024-03-27 08:01:05.718"
+    },
+    "natural_response": "The SQL query you provided returns the following information:\n\n* The asset ID for each asset\n* The first created time for each asset\n* The display name of the asset type for each asset\n* The display name of the owning network for each asset\n\nThere are no results in the database that match the specified criteria.",
+    "match_type": "exact",
+    "status": "PASS"
+  },
+  {
+    "id": 15,
+    "query": "Show the network display_name that has the fewest associated assets.",
+    "expected": "Animal Planet - Taiwan",
+    "actual": "The",
+    "natural_response": "The network with the fewest associated assets is \"Fine Living Digital\" with 1 asset.",
+    "match_type": "exact",
+    "status": "FAIL"
+  },
+  {
+    "id": 16,
+    "query": "Show the task_exec_id with the earliest due date.",
+    "expected": "2232362",
+    "actual": "The",
+    "natural_response": "The earliest due date for the work orders is 2023-01-15.",
+    "match_type": "numeric",
+    "status": "FAIL"
+  },
+  {
+    "id": 17,
+    "query": "How many task_exec have the workorder_id 6297c3b8-9992-45c8-a4cf-89082f22744e?",
+    "expected": 7,
+    "actual": 9992,
+    "natural_response": "The user asked: \"How many task_exec have the workorder_id 6297c3b8-9992-45c8-a4cf-89082f22744e?\"\n\nThere are no task_exec with the workorder_id 6297c3b8-9992-45c8-a4cf-89082f22744e.",
+    "match_type": "minimum",
+    "status": "PASS"
+  },
+  {
+    "id": 18,
+    "query": "List all default_config_id created after 2024-06-01.",
+    "expected": [
+      "4246",
+      "4247",
+      "4248",
+      "1772",
+      "4243",
+      "4244",
+      "4245",
+      "4279",
+      "1228",
+      "1086",
+      "4276",
+      "4277",
+      "4278",
+      "4280",
+      "4281",
+      "16435",
+      "4282",
+      "1613",
+      "4283"
+    ],
+    "actual": null,
+    "natural_response": "",
+    "match_type": "subset",
+    "status": "HTTP ERROR",
+    "http_status": 500
+  },
+  {
+    "id": 19,
+    "query": "List the default_config_id values for configurations where the job type is 'Closed Captioning' and the language is 'Spanish (Latin American)'",
+    "expected": "1336",
+    "actual": "The",
+    "natural_response": "The default_config_id values for configurations where the job type is 'Closed Captioning' and the language is 'Spanish (Latin American)' are: []",
+    "match_type": "subset",
+    "status": "FAIL"
+  },
+  {
+    "id": 20,
+    "query": "Count the number of default configuration IDs where the job type is \"Graphics List\".",
+    "expected": 47,
+    "actual": 0,
+    "natural_response": "There is 0 default configuration ID where the job type is \"Graphics List\".",
+    "match_type": "minimum",
+    "status": "FAIL"
+  }
+]
