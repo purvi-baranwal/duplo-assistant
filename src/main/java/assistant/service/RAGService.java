@@ -50,37 +50,51 @@ public class RAGService {
         }
     }
 
-    public List<String> retrieveRelevantContext(String userQuery, String previousContext) {
-        List<String> relevantChunks = new ArrayList<>();
-        String queryForEmbedding = userQuery;
-        if (!previousContext.isEmpty()) {
-            queryForEmbedding = previousContext + "\n" + userQuery; // Combine for better context
+    public boolean isLikelySchemaRelevant(String userQuery) {
+        List<String> schemaTerms = schemaService.getAllTableAndColumnNames();
+        String normalizedQuery = userQuery.toLowerCase().replaceAll("[^a-z0-9 ]", "").replaceAll("\\s+", " ");
+
+        for (String term : schemaTerms) {
+            String normalizedTerm = term.toLowerCase().replace("_", " ").replaceAll("\\s+", " ");
+            if (normalizedQuery.contains(normalizedTerm) || normalizedQuery.contains(normalizedTerm.replace(" ", ""))) {
+                return true;
+            }
+
+            // Try handling plural/singular variants
+            if (normalizedQuery.contains(normalizedTerm + "s") || normalizedQuery.contains(normalizedTerm.replace("s", ""))) {
+                return true;
+            }
         }
 
-        List<Double> queryEmbedding = embeddingService.getEmbedding(queryForEmbedding);
+        return false;
+    }
 
+    public List<String> retrieveRelevantContext(String userQuery, String previousContext) {
+        List<String> relevantChunks = new ArrayList<>();
+        String queryForEmbedding = previousContext.isEmpty()
+                ? userQuery
+                : previousContext + "\n" + userQuery;
+
+        List<Double> queryEmbedding = embeddingService.getEmbedding(queryForEmbedding);
         if (queryEmbedding.isEmpty()) {
             return Collections.emptyList();
         }
 
-        // Simple similarity search (cosine similarity)
         List<Map.Entry<Double, String>> scoredChunks = new ArrayList<>();
         for (Map<String, Object> entry : knowledgeBase) {
             List<Double> kbEmbedding = (List<Double>) entry.get("embedding");
+            String text = (String) entry.get("text");
+
             if (kbEmbedding != null && !kbEmbedding.isEmpty()) {
                 double similarity = cosineSimilarity(queryEmbedding, kbEmbedding);
-                scoredChunks.add(Map.entry(similarity, (String) entry.get("text")));
-                // Also add SQL examples if present
-                if (entry.containsKey("sql_example")) {
-                    scoredChunks.add(Map.entry(similarity, "Example SQL: " + entry.get("sql_example")));
+                if (similarity > 0.7) {
+                    scoredChunks.add(Map.entry(similarity, text));
                 }
             }
         }
 
-        // Sort by similarity and take top N
         scoredChunks.sort(Comparator.comparing(Map.Entry::getKey, Comparator.reverseOrder()));
 
-        // Limit to a reasonable number of chunks for the prompt
         int maxChunks = 3;
         for (int i = 0; i < Math.min(scoredChunks.size(), maxChunks); i++) {
             relevantChunks.add(scoredChunks.get(i).getValue());
@@ -88,6 +102,7 @@ public class RAGService {
 
         return relevantChunks;
     }
+
 
     // Simple Cosine Similarity calculation
     private double cosineSimilarity(List<Double> vectorA, List<Double> vectorB) {
