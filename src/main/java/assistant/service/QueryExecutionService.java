@@ -21,8 +21,6 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.statement.Statement;
 import org.springframework.stereotype.Service;
 
 
@@ -391,13 +389,6 @@ public class QueryExecutionService {
         }
 
         String lowerSql = sql.toLowerCase().trim();
-
-        // ✅ 1. SQL Syntax Validation using JSqlParser
-        try {
-            net.sf.jsqlparser.statement.Statement parsed = net.sf.jsqlparser.parser.CCJSqlParserUtil.parse(sql);
-        } catch (Exception e) {
-            return "Query Check Failed: Invalid SQL syntax.";
-        }
 
         // ✅ 2. Blacklist dangerous SQL keywords
         List<String> forbiddenKeywords = List.of(
